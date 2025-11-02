@@ -13,10 +13,16 @@ namespace Domain.Entities.SqlEntities.UsersEntities
         public required string  ProfileName { get; set; }
 
         public required Guid UserId { get; set; }
-        [ForeignKey(nameof(UserId))]
         public required AppUser User { get; set; }
 
-        public virtual ICollection<ProfileRoom> ProfileRooms { get; set; } = new HashSet<ProfileRoom>();
+        public virtual ICollection<RoomProfile> RoomProfiles { get; set; } = new HashSet<RoomProfile>();
 
+        public void Rename(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new Exception("Profile name cannot be empty");
+            ProfileName = newName.Trim();
+            UpdateAudit(User.IdentityUser.UserName);
+        }
     }
 }

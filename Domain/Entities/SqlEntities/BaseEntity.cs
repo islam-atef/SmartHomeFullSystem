@@ -7,12 +7,35 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.SqlEntities
 {
-    public class BaseEntity<T>
+    public abstract class BaseEntity<T>
     {
-        [Required]
-        public required T Id { get; set; } 
+        public required T Id { get; set; }
 
-        [Required] 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
+
+        public string? CreatedBy { get; protected set; }
+
+        public DateTime? ModifiedAt { get; protected set; }
+
+        public string? ModifiedBy { get; protected set; }
+
+        public bool IsDeleted { get; protected set; }
+
+        public DateTime? DeletedAt { get; protected set; }
+
+        public byte[]? RowVersion { get; protected set; }
+
+        public void MarkDeleted(string? user = null)
+        {
+            IsDeleted = true;
+            DeletedAt = DateTime.UtcNow;
+            ModifiedBy = user;
+        }
+
+        public void UpdateAudit(string? user = null)
+        {
+            ModifiedAt = DateTime.UtcNow;
+            ModifiedBy = user;
+        }
     }
 }

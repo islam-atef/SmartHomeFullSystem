@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Domain.Entities.SqlEntities.RoomEntities;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,12 +11,13 @@ namespace Domain.Entities.SqlEntities.UsersEntities
 {
     public class AppUser : BaseEntity<Guid>
     {
-        public string? UserImage { get; set; }
+        public string? UserImageUrl { get; set; }
 
-        public required string IdentityUserId { get; set; }
-        [ForeignKey(nameof(IdentityUserId))]
-        public virtual required IdebtityUser IdentityUser { get; set; }
+        public required Guid IdentityUserId { get; set; }
+        public virtual AppIdentityUser IdentityUser { get; set; } = default!;
 
         public virtual ICollection<Profile>? Profiles { get; set; } = new HashSet<Profile>();
+
+        public virtual ICollection<Home>? Homes { get; set; } = new HashSet<Home>();
     }
 }
