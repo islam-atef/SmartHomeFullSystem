@@ -34,7 +34,7 @@ namespace Domain.Entities.SqlEntities.RoomEntities
             UpdateAudit(user);
         }
 
-        public static Room Create(string name)
+        public static Room Create(string name, Home home)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Room name is required.", nameof(name));
@@ -42,7 +42,9 @@ namespace Domain.Entities.SqlEntities.RoomEntities
             return new Room
             {
                 Id = Guid.NewGuid(),
-                RoomName = name.Trim()
+                RoomName = name.Trim(),
+                HomeId = home.Id,
+                Home = home,
             };
         }
 

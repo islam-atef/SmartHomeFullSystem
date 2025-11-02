@@ -21,6 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="9.0.10" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
@@ -31,6 +32,7 @@
   <ItemGroup>
     <Folder Include="MessagingServices\" />
     <Folder Include="ImagesServices\" />
+    <Folder Include="Persistence\Migrations\" />
     <Folder Include="SecurityServices\" />
     <Folder Include="Persistence\Repositories\" />
   </ItemGroup>
