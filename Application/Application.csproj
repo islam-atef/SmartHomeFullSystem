@@ -14,7 +14,9 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
-    <Folder Include="Interfaces\InfrastructureInterfaces\" />
+    <Folder Include="Interfaces\InfraServiceInterfaces\ImageServiceInterfaces\" />
+    <Folder Include="Interfaces\InfraServiceInterfaces\MessagingServiceInterfaces\" />
+    <Folder Include="Interfaces\InfraServiceInterfaces\SecurityServiceInterfaces\" />
     <Folder Include="Mappings\" />
     <Folder Include="Interfaces\AppServiceInterfaces\" />
     <Folder Include="AppServices\" />

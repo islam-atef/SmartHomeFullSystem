@@ -13,7 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Messaging\" />
+    <Folder Include="MessagingServices\" />
+    <Folder Include="ImagesServices\" />
+    <Folder Include="SecurityServices\" />
     <Folder Include="Persistence\Configurations\" />
     <Folder Include="Persistence\Repositories\" />
   </ItemGroup>
