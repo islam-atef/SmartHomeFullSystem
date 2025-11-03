@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+	<OutputType>Library</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -19,8 +19,6 @@
     <Folder Include="Interfaces\InfraServiceInterfaces\MessagingServiceInterfaces\" />
     <Folder Include="Interfaces\InfraServiceInterfaces\SecurityServiceInterfaces\" />
     <Folder Include="Mappings\" />
-    <Folder Include="Interfaces\AppServiceInterfaces\" />
-    <Folder Include="AppServices\" />
     <Folder Include="Behaviors\" />
   </ItemGroup>
 

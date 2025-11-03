@@ -11,9 +11,8 @@ namespace Domain.Entities.SqlEntities.RoomEntities
     {
         private RoomState() { }
 
-        public Guid ProfileRoomId { get; private set; }
-        [ForeignKey(nameof(ProfileRoomId))]
-        public virtual RoomProfile ProfileRoom { get; private set; }
+        public Guid RoomProfileId { get; private set; }
+        public virtual RoomProfile RoomProfile { get; private set; }
 
         public DateTime? LastChange {get; private set; }
 
@@ -28,8 +27,8 @@ namespace Domain.Entities.SqlEntities.RoomEntities
                 throw new ArgumentException("State data is required", nameof(stateData));
 
             return new RoomState { 
-                Id = Guid.NewGuid(), 
-                ProfileRoom = pr,
+                Id = Guid.NewGuid(),
+                RoomProfile = pr,
                 LastChange = null,
                 StateData = stateData 
             };

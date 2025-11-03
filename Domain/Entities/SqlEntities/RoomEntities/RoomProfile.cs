@@ -19,7 +19,6 @@ namespace Domain.Entities.SqlEntities.RoomEntities
         private readonly List<RoomState> _favoriteStates = new();
         public IReadOnlyCollection<RoomState> FavoriteStates => _favoriteStates.AsReadOnly();
 
-        public Guid? LastStateId { get; private set; }
         public virtual RoomState? LastState { get; private set; }
 
         private RoomProfile() { }
@@ -38,7 +37,7 @@ namespace Domain.Entities.SqlEntities.RoomEntities
                 RoomId = room.Id
             };
             room.AttachProfileRoom(pr);
-            return pr;
+            return pr; 
         }
 
         public RoomState AddFavoriteState(string stateData)
@@ -52,18 +51,16 @@ namespace Domain.Entities.SqlEntities.RoomEntities
         public void RemoveFavoriteState(RoomState state)
         {
             ArgumentNullException.ThrowIfNull(state);
-            _favoriteStates.Remove(state);
+            _favoriteStates.Remove(state); 
             ModifiedAt = DateTime.UtcNow;
         }
 
         public void SetLastState(RoomState state)
         {
             ArgumentNullException.ThrowIfNull(state);
-            if (state.ProfileRoomId != Id)
+            if (state.RoomProfileId != Id)
                 throw new InvalidOperationException("State does not belong to this ProfileRoom.");
-
             LastState = state;
-            LastStateId = state.Id;
             ModifiedAt = DateTime.UtcNow;
         }
     }

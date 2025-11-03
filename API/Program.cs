@@ -1,7 +1,6 @@
 using Application.DI;
 using Infrastructure.DI;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
