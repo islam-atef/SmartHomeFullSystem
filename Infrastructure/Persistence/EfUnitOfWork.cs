@@ -9,5 +9,8 @@ namespace Infrastructure.Persistence
 {
     public class EfUnitOfWork : IUnitOfWork
     {
+        public IAppUserRepo AppUserRepo => throw new NotImplementedException();
+
+        public IUserRefreshTokenRepo UserRefreshTokenRepo => throw new NotImplementedException();
     }
 }

@@ -8,5 +8,7 @@ namespace Domain.RepositotyInterfaces
 {
     public interface IUnitOfWork
     {
+        public IAppUserRepo AppUserRepo { get; }
+        public IUserRefreshTokenRepo UserRefreshTokenRepo { get; }
     }
 }

@@ -9,17 +9,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Behaviors\**" />
+    <Compile Remove="Interfaces\**" />
+    <Compile Remove="Mappings\**" />
+    <EmbeddedResource Remove="Behaviors\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Mappings\**" />
+    <None Remove="Behaviors\**" />
+    <None Remove="Interfaces\**" />
+    <None Remove="Mappings\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Interfaces\InfraServiceInterfaces\ImageServiceInterfaces\" />
-    <Folder Include="Interfaces\InfraServiceInterfaces\MessagingServiceInterfaces\" />
-    <Folder Include="Interfaces\InfraServiceInterfaces\SecurityServiceInterfaces\" />
-    <Folder Include="Mappings\" />
-    <Folder Include="Behaviors\" />
+    <Folder Include="Abstractions\Security\DTOs\" />
+    <Folder Include="Commons\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
 </Project>

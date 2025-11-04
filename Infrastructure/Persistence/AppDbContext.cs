@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.SqlEntities.DiviceEntities;
 using Domain.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.SecurityEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -31,6 +32,7 @@ namespace Infrastructure.Persistence
 
         public virtual DbSet<ControlUnit> ControlUnits { get; set; }
 
+        public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

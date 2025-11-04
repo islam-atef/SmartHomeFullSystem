@@ -1,4 +1,6 @@
-﻿using Domain.RepositotyInterfaces;
+﻿using Application.Abstractions.Identity;
+using Domain.RepositotyInterfaces;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,17 +17,22 @@ namespace Infrastructure.DI
     {
         public static IServiceCollection AddInfrastructureService(this IServiceCollection services,IConfiguration configuration)
         {
-            // 1️)  read connection string from configuration
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                                   ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            // 1️)  read connection string from configuration and register DbContext
+            var connectionString = configuration.GetConnectionString("DefaultConnection") 
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            // 2️)  register DbContext
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            // 3️)  register repositories, unit of work, etc.
+            //  register repositories, unit of work, etc.
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-            // ... any other infra services
+
+            // ... any other infra services   
+            // 1- Identity configuration
+            services.AddAppIdentityService();
+            // 2- Identity Management
+            services.AddScoped<IIdentityManagement, IdentityManagement>();
+            // 3- Auth
 
             return services;
         }
