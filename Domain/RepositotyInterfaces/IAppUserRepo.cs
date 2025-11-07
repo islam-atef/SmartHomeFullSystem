@@ -1,5 +1,5 @@
-﻿using Domain.Entities.SqlEntities.UsersEntities;
-using Domain.GenericResult;
+﻿using Application.Entities.SqlEntities.UsersEntities;
+using Application.GenericResult;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.RepositotyInterfaces
+namespace Application.RepositotyInterfaces
 {
     public interface IAppUserRepo
     {
@@ -15,5 +15,6 @@ namespace Domain.RepositotyInterfaces
         Task<GenericResult<AppUser>> AddUserAsync(AppUser user, CancellationToken ct = default);
         Task<GenericResult<AppUser>> UpdateUserAsync(AppUser user, CancellationToken ct = default);
         Task<GenericResult<string?>> AddOrUpdateUserImageAsync(IFormFileCollection imageFile, AppUser user, CancellationToken ct = default);
+        Task<GenericResult<bool>> RemoveUserAsync(Guid userId, CancellationToken ct = default);
     }
 }

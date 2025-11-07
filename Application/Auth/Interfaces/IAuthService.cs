@@ -1,5 +1,5 @@
 ﻿using Application.Auth.DTOs;
-using Domain.GenericResult;
+using Application.GenericResult;
 using System;
 using System.Collections.Generic;
 using System.Linq;

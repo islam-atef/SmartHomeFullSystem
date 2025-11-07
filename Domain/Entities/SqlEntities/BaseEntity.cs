@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.SqlEntities
+namespace Application.Entities.SqlEntities
 {
     public abstract class BaseEntity<T>
     {

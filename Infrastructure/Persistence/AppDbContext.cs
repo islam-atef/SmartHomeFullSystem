@@ -1,6 +1,7 @@
-﻿using Domain.Entities.SqlEntities.DiviceEntities;
-using Domain.Entities.SqlEntities.RoomEntities;
-using Domain.Entities.SqlEntities.SecurityEntities;
+﻿using Application.Entities.SqlEntities.DiviceEntities;
+using Application.Entities.SqlEntities.RoomEntities;
+using Application.Entities.SqlEntities.SecurityEntities;
+using Application.Entities.SqlEntities.UsersEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace Infrastructure.Persistence
         }
 
         public virtual DbSet<AppUser> AppUsers { get; set; }
+        public virtual DbSet<AppDevice> AppDevices { get; set; }
         public virtual DbSet<Profile> ProfileUsers { get; set; }
 
         public virtual DbSet<Home> Homes { get; set; }

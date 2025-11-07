@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.RuleServices
+namespace Application.RuleServices
 {
-    public static class HashWithSaltService
+    public interface IRefreshTokenHashService
     {
     }
 }

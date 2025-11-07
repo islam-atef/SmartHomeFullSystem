@@ -16,16 +16,6 @@ namespace Application.DI
         {
             // Register your application-layer services here
             services.AddScoped<IAuthService, AuthService>();
-            //services.AddScoped<IDateTimeProvider, DateTimeProvider>(); ///
-
-            // Example: MediatR handlers (if you use CQRS)
-            // services.AddMediatR(typeof(ApplicationModule).Assembly);
-
-            // Example: AutoMapper profiles
-            // services.AddAutoMapper(typeof(ApplicationModule).Assembly);
-
-            // Example: validation services
-            // services.AddValidatorsFromAssembly(typeof(ApplicationModule).Assembly);
 
             return services;
         }

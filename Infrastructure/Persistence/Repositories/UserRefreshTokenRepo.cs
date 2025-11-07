@@ -1,6 +1,6 @@
-﻿using Domain.Entities.SqlEntities.SecurityEntities;
-using Domain.GenericResult;
-using Domain.RepositotyInterfaces;
+﻿using Application.Entities.SqlEntities.SecurityEntities;
+using Application.GenericResult;
+using Application.RepositotyInterfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -26,11 +26,18 @@ namespace Infrastructure.Persistence.Repositories
            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
         }
 
+        public async Task<UserRefreshToken?> GetByDeviceIdAsync(Guid deviceId, CancellationToken ct = default)
+        {
+            return await _context.UserRefreshTokens
+          .AsNoTracking()
+          .FirstOrDefaultAsync(t => t.DeviceId == deviceId, ct);
+        }
+
         public async Task<IEnumerable<UserRefreshToken>> GetUserTokensAsync(Guid userId, CancellationToken ct = default)
         {
             return await _context.UserRefreshTokens
            .AsNoTracking()
-           .Where(t => t.UserId == userId)
+           .Where(t => t.AppUserId == userId)
            .OrderByDescending(t => t.ExpiresAt)
            .ToListAsync(ct);
         }
@@ -48,7 +55,7 @@ namespace Infrastructure.Persistence.Repositories
         public async Task<GenericResult<int>> RevokeAllUserTokensAsync(Guid userId, CancellationToken ct = default)
         {
             var tokens = await _context.UserRefreshTokens
-                .Where(t => t.UserId == userId && !t.Revoked)
+                .Where(t => t.AppUserId == userId && !t.Revoked)
                 .ToListAsync(ct);
 
             if (tokens.Count == 0)
@@ -84,10 +91,19 @@ namespace Infrastructure.Persistence.Repositories
             return GenericResult<bool>.Success(true, "Refresh token is aready revoked.");
         }
 
-        public async Task<GenericResult<UserRefreshToken>> SaveTokenAsync(UserRefreshToken token, CancellationToken ct = default)
+        public async Task<GenericResult<UserRefreshToken>> SaveTokenAsync(
+            Guid userId,
+            string TKSalt, string TKHash, int expiredAfter,
+            Guid deviceId,
+            CancellationToken ct = default)
         {
+            if (string.IsNullOrWhiteSpace(TKSalt) || string.IsNullOrWhiteSpace(TKHash) || expiredAfter <= 0 || userId == Guid.Empty)
+            {
+                return GenericResult<UserRefreshToken>.Failure(ErrorType.InvalidData, "Invalid token data provided.");
+            }
             try
             {
+                var token = UserRefreshToken.Create(userId,TKHash,TKSalt,DateTime.UtcNow.AddDays(expiredAfter), deviceId);
                 await _context.UserRefreshTokens.AddAsync(token, ct);
                 var saved = await _context.SaveChangesAsync(ct) > 0;
 
@@ -101,27 +117,18 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<GenericResult<string>> RotateRefreshTokenAsync(Guid oldTokenId, Guid userId,string newSalt, string newHash,int expiredAfter , CancellationToken ct = default)
+        public async Task<GenericResult<string>> RotateRT_DBProcessAsync(Guid oldTokenId, Guid userId,string newSalt, string newHash,int expiredAfter , CancellationToken ct = default)
         {
             // get the old token
-            var oldToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(t => t.Id == oldTokenId && t.UserId == userId, ct);
+            var oldToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(t => t.Id == oldTokenId && t.AppUserId == userId, ct);
             if (oldToken is null)
                 return GenericResult<string>.Failure(ErrorType.NotFound, "Old refresh token not found.");
 
             if (oldToken.Revoked || oldToken.ExpiresAt <= DateTime.UtcNow)
                 return GenericResult<string>.Failure(ErrorType.InvalidData, "Old token already invalid.");
 
-            // create the new User Refresh Token not the Refresh Token Itself.
-            var newToken = new UserRefreshToken
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                TokenHash = newHash,
-                TokenSalt = newSalt,
-                ExpiresAt = DateTime.UtcNow.AddDays(expiredAfter), 
-                Device = oldToken.Device,
-                IpAddress = oldToken.IpAddress
-            };
+            // create the new User Refresh Token not the Refresh Token Itself, 
+            var newToken = UserRefreshToken.Create(userId, newHash, newSalt, DateTime.UtcNow.AddDays(expiredAfter), oldToken.DeviceId);
 
             // attach the two token together
             oldToken.Revoked = true;
@@ -133,14 +140,13 @@ namespace Infrastructure.Persistence.Repositories
             var saved = await _context.SaveChangesAsync(ct) > 0;
             if (saved)
             {
-                var plainTokenToReturn = $"{newToken.Id}";
-                return GenericResult<string>.Success(plainTokenToReturn, "Refresh token rotated.");
+                var newTokenId = $"{newToken.Id}";
+                return GenericResult<string>.Success(newTokenId, "Refresh token rotated DB process Successeded.");
             }
             else
             {
                 return GenericResult<string>.Failure(ErrorType.Conflict, "Can not save changes!.");
             }
-        }
-
+        } 
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Domain.GenericResult
+﻿namespace Application.GenericResult
 {
     public class GenericResult<T> 
     {

@@ -1,5 +1,7 @@
 ﻿using Application.Abstractions.Identity;
-using Domain.RepositotyInterfaces;
+using Application.Auth.Interfaces;
+using Application.Auth.Services;
+using Application.RepositotyInterfaces;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -31,8 +33,7 @@ namespace Infrastructure.DI
             // 1- Identity configuration
             services.AddAppIdentityService();
             // 2- Identity Management
-            services.AddScoped<IIdentityManagement, IdentityManagement>();
-            // 3- Auth
+            services.AddScoped<IIdentityManagement, IdentityManagement>(); 
 
             return services;
         }

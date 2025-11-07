@@ -1,5 +1,5 @@
-﻿using Domain.Entities.SqlEntities.DiviceEntities;
-using Domain.Entities.SqlEntities.RoomEntities;
+﻿using Application.Entities.SqlEntities.DiviceEntities;
+using Application.Entities.SqlEntities.RoomEntities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;

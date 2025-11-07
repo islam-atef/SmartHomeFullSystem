@@ -1,12 +1,12 @@
-﻿using Domain.Entities.SqlEntities.DiviceEntities;
-using Domain.Entities.SqlEntities.UsersEntities;
+﻿using Application.Entities.SqlEntities.DiviceEntities;
+using Application.Entities.SqlEntities.UsersEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.SqlEntities.RoomEntities
+namespace Application.Entities.SqlEntities.RoomEntities
 {
     public class Room : BaseEntity<Guid>
     {

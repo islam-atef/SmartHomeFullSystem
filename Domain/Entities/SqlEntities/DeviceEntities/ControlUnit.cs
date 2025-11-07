@@ -1,4 +1,4 @@
-﻿using Domain.Entities.SqlEntities.RoomEntities;
+﻿using Application.Entities.SqlEntities.RoomEntities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.SqlEntities.DiviceEntities
+namespace Application.Entities.SqlEntities.DiviceEntities
 {
     public class ControlUnit : BaseEntity<Guid>
     {

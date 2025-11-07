@@ -7,9 +7,10 @@ using Application.Abstractions.Security.Interfaces;
 using Application.Abstractions.Time;
 using Application.Auth.DTOs;
 using Application.Auth.Interfaces;
-using Domain.Entities.SqlEntities.UsersEntities;
-using Domain.GenericResult;
-using Domain.RepositotyInterfaces;
+using Application.Entities.SqlEntities.UsersEntities;
+using Application.GenericResult;
+using Application.RepositotyInterfaces;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Buffers.Text;
@@ -17,7 +18,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -91,15 +91,19 @@ namespace Application.Auth.Services
 
         private async Task<AuthResponseDTO?> IssueTokensAsync(UserIdentityDTO user) // [Done]
         {
+            var appUserId = await _users.GetAppUserIdAsync(user.Id);
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.UserName ?? user.Email ?? ""),
+                new(ClaimTypes.NameIdentifier, appUserId.ToString()), // Use AppUserId as NameIdentifier, not IdentityUserId for security.
+                new(ClaimTypes.Name, user.UserName ?? ""),
                 new(ClaimTypes.Email, user.Email ?? ""),
+                // Device info claim can be added here if needed
             };
 
             var (access, expires) = _tokens.GenerateAccessToken(claims);
             var refresh = _tokens.GenerateRefreshToken(); // احفظه في DB لو هتشتغل Refresh flow
+            // Generate the Hash and Salt for the refresh token and save them in DB
+
 
             if (access == null || refresh == null)
                 return null;
@@ -148,9 +152,27 @@ namespace Application.Auth.Services
                 {
                     // create AppUser Entity Here 
                     var appUser = AppUser.Create(findUser.Id);
-                    var createResult = await _work.AppUserRepo.AddUserAsync(appUser);
+                    var createResult = await _work.AppUser.AddUserAsync(appUser);
+                    // Check if the Device is already exists:
+                    if (!(await _work.AppDevice.CheckDeviceExistsAsync(accountActivationDTO.DeviceMACAddress)).Value)
+                    {
+                        // Create the Device and assign it to the user
+                        var deviceResult = await _work.AppDevice.AddAppDeviceAsync(
+                            accountActivationDTO.DeviceMACAddress,
+                            accountActivationDTO.DeviceIP,
+                            "Default Device Name",
+                            "Default Device Type"
+                            );
+                        if (!(deviceResult.IsSuccess && deviceResult.Value != null))
+                        {
+                            // return success
+                            return GenericResult<bool>.Success(true, "Account has been Activated, But the Device is still not been Authorized!");
+                        }        
+                    }
+                    // Assign Device to User
+                    await _work.AppDevice.AssignDeviceToUserAsync(accountActivationDTO.DeviceMACAddress, appUser.Id);
                     // return success
-                    return GenericResult<bool>.Success(true, "Account has been Activated"); 
+                    return GenericResult<bool>.Success(true, "Account has been Activated");
                 }
                 else
                 {
@@ -200,42 +222,64 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginRequestDTO req) // [Done]
+        public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginRequestDTO req) // [Done] // [Check if the login done from a Knwon device (still)]
         {
             if (req == null)
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.NullableValue);
             try
             {
+                // 1[] check if the user use the UserName or Email:
                 UserIdentityDTO? findUser = null;
-                // check if the user use the UserName or Email:
                 if (req.Email == null)
                     findUser = await _users.FindByEmailAsync(req.Email!);
                 else
                     findUser = await _users.FindByNameAsync(req.Username!);
+
                 if (findUser != null)
                 {
+                    // 2[] the Account is confirmed
                     if (!await _users.CheckEmailConfirmedAsync( req.Email ?? req.Username))
                     {
                         await SendActivationEmail(findUser.Email);
                         return GenericResult<AuthResponseDTO>.Failure(ErrorType.InvalidData
                             , "Please Confirm Your Account First !\n There is a new Activation Mail has been sent to you");
                     }
-                    // the Account is confirmed
+                   
+                    // 3[] Check the Password:
                     var check = await _users.CheckPasswordSignInAsync(findUser.Email,req.Password);
                     if (!check)
                         return GenericResult<AuthResponseDTO>.Failure(ErrorType.Validation, "The Password is Wrong");
 
-                    var returnValue = await IssueTokensAsync(findUser!);
-                    if (returnValue == null)
-                        return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, "Token Generation Failed");
-                    return GenericResult<AuthResponseDTO>.Success(returnValue, "Login Successful");
+                    // 4[] Check if the login done from a known Device "MACAddress" (Optional)-> if Yes, proceed to issue Tokens. -> if No,send a Checking Mail, then create new Device Entity and link it to the user.
+                    var appUserId = await _users.GetAppUserIdAsync(findUser.Id);
+                    if (!(await _work.AppDevice.CheckDeviceAssignedToUserAsync(req.DeviceMACAddress,appUserId)).Value)
+                    {
+                        // Device is not assigned to this user:
+                        // Send a Checking Mail to the user by using DeviceCheckingService (Optional)
+                        // _DeviceCheckingService.SendDeviceCheckingEmail(LoginRequestDTO req, Guid appUserId); // we makesure that the req contains the Email
+                        return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "The Used Device is not Authorized!");
+                    }
+                    else
+                    {
+                        // Update Device IP if needed
+                        if(!(await _work.AppDevice.CheckDeviceIPAsync(req.DeviceMACAddress,req.DeviceIP)).Value)
+                        {
+                            await _work.AppDevice.UpdateAppDeviceIPAsync(req.DeviceMACAddress, req.DeviceIP);
+                        }
+                        // Finally[] Get the Tokens:
+                        var returnValue = await IssueTokensAsync(findUser!);
+                        // check if the Token Generation is successfull:
+                        if (returnValue == null)
+                            return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, "Token Generation Failed");
+                        return GenericResult<AuthResponseDTO>.Success(returnValue, "Login Successful");
+                    }
                 }
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.NotFound, "There is no User with this Data!");
             }
             catch (Exception ex) { return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken)
+        public Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken) // [Check if the Request done from the device]
         {
             throw new NotImplementedException();
         }
@@ -251,8 +295,16 @@ namespace Application.Auth.Services
                 {
                     var deletingResult = await _users.DeleteAsync(email);
                     if (deletingResult)
-                        return GenericResult<bool>.Success(true, "the Account Has been deleted Successfully!");
-
+                    {
+                        // Also, consider deleting related AppUser and AppDevice entities if needed
+                        var appUserId = await _users.GetAppUserIdAsync(finduser.Id);
+                        // Delete AppUser from the Devices first to avoid FK constraint issues
+                        await _work.AppDevice.RemoveUserFromAllDevicesAsync(appUserId);
+                        // Then delete the AppUser
+                        await _work.AppUser.RemoveUserAsync(appUserId);
+                        // Return success
+                        return GenericResult<bool>.Success(true, "the Account Has been deleted Successfully!"); 
+                    }
                     return GenericResult<bool>.Failure(ErrorType.Conflict, "User can not be deleted!");
                 }
                 else

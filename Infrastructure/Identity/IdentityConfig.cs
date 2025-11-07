@@ -1,4 +1,4 @@
-﻿using Domain.Entities.SqlEntities.UsersEntities;
+﻿using Application.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;

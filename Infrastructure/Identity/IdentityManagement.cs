@@ -1,8 +1,9 @@
 ﻿using Application.Abstractions.Identity;
 using Application.Abstractions.Identity.DTOs;
-using Domain.Entities.SqlEntities.UsersEntities;
+using Application.Entities.SqlEntities.UsersEntities;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -248,6 +249,23 @@ namespace Infrastructure.Identity
                 return errors;
             }
             catch { return null!; }
+        }
+
+        public async Task<Guid> GetAppUserIdAsync(Guid userId)
+        {
+            if (userId == Guid.Empty)
+                return Guid.Empty;
+            try
+            {
+                var appUserId = await _context.AppUsers.Where(AU => AU.IdentityUserId == userId).Select(au => au.Id).SingleOrDefaultAsync();
+                if (appUserId == Guid.Empty)
+                    return Guid.Empty;
+                return appUserId;
+            }
+            catch (Exception)
+            {
+                return Guid.Empty;
+            }
         }
     }
 }

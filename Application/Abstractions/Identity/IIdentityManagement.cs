@@ -26,6 +26,8 @@ namespace Application.Abstractions.Identity
         Task<bool> DeleteAsync(string email);
 
         Task<string?> ResetPasswordAsync(string email, string resetPwToken, string password);
+
+        Task<Guid> GetAppUserIdAsync(Guid userId);
     }
 }
  

@@ -11,5 +11,7 @@ namespace Application.Auth.DTOs
         public string? Email { get; init; } = default;
         public string? Username { get; init; } = default;
         public string Password { get; init; } = default!;
+        public string DeviceMACAddress { get; init; } = default!;
+        public string DeviceIP { get; init; } = default!;
     }
 }

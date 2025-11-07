@@ -1,4 +1,5 @@
-﻿using Domain.Entities.SqlEntities.RoomEntities;
+﻿using Application.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Domain.Entities.SqlEntities.UsersEntities
+namespace Application.Entities.SqlEntities.UsersEntities
 {
     public class AppUser : BaseEntity<Guid>
     {
@@ -20,6 +21,8 @@ namespace Domain.Entities.SqlEntities.UsersEntities
         public virtual ICollection<Profile>? Profiles { get; set; } = new HashSet<Profile>();
 
         public virtual ICollection<Home>? Homes { get; set; } = new HashSet<Home>();
+
+        public virtual ICollection<AppDevice>? AppDevices { get; set; } = new HashSet<AppDevice>();
 
         public static AppUser Create(Guid identityUserId)
         {

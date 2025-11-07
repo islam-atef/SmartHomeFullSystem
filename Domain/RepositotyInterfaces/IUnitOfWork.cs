@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Domain.RepositotyInterfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.RepositotyInterfaces
+namespace Application.RepositotyInterfaces
 {
     public interface IUnitOfWork
     {
-        public IAppUserRepo AppUserRepo { get; }
-        public IUserRefreshTokenRepo UserRefreshTokenRepo { get; }
+        public IAppUserRepo AppUser { get; }
+        public IUserRefreshTokenRepo UserRefreshToken { get; }
+        public IAppDeviceRepo AppDevice { get; }
+        public IDeviceSessionRepo DeviceSession { get; }
     }
 }

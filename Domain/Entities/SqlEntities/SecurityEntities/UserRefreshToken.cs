@@ -1,15 +1,15 @@
-﻿using Domain.Entities.SqlEntities.UsersEntities;
+﻿using Application.Entities.SqlEntities.UsersEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.SqlEntities.SecurityEntities
+namespace Application.Entities.SqlEntities.SecurityEntities
 {
     public class UserRefreshToken : BaseEntity<Guid>
     {
-        public Guid UserId { get; set; }
+        public Guid AppUserId { get; set; }
         public AppIdentityUser User { get; set; } = default!;
 
         public string TokenHash { get; set; } = default!;
@@ -21,26 +21,24 @@ namespace Domain.Entities.SqlEntities.SecurityEntities
         public DateTime? RevokedAt { get; set; }
         public string? ReplacedByToken { get; set; } = null!;
 
-        public string Device { get; set; } = "Unknown";
-        public string IpAddress { get; set; } = "Unknown";
+        public Guid? DeviceId { get; set; } = Guid.Empty;
 
         public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
         public bool IsActive => !Revoked && !IsExpired;
 
-        public static UserRefreshToken Create(Guid userId, string tokenHash, string tokenSalt, DateTime expiresAt, string device = "Unknown", string ipAddress  = "Unknown" )
+        public static UserRefreshToken Create(Guid userId, string tokenHash, string tokenSalt, DateTime expiresAt, Guid? deviceId )
         {
             if (userId == Guid.Empty || tokenHash == null || tokenSalt == null || expiresAt < DateTime.UtcNow)
                 throw new ArgumentException("Wrong Data!");
             return new UserRefreshToken
             { 
                 Id = Guid.NewGuid(),
-                UserId = userId,
+                AppUserId = userId,
                 TokenHash = tokenHash,
                 TokenSalt = tokenSalt,
                 ExpiresAt = expiresAt,
                 CreatedAt = DateTime.UtcNow,
-                Device = device,
-                IpAddress = ipAddress
+                DeviceId = deviceId,
             };
         }
     }

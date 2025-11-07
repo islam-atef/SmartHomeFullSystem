@@ -1,4 +1,4 @@
-﻿using Domain.Entities.SqlEntities.RoomEntities;
+﻿using Application.Entities.SqlEntities.RoomEntities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.SqlEntities.UsersEntities
+namespace Application.Entities.SqlEntities.UsersEntities
 {
     public class Profile : BaseEntity<Guid>
     {

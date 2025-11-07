@@ -10,5 +10,7 @@ namespace Application.Auth.DTOs
     {
         public string UserEmail { get; init; } = default!;
         public string ActivationToken { get; init; } = default!;
+        public string DeviceMACAddress { get; init; } = default!;
+        public string DeviceIP { get; init; } = default!;
     }
 }

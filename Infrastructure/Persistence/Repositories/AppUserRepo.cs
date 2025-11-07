@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Image;
-using Domain.Entities.SqlEntities.UsersEntities;
-using Domain.GenericResult;
-using Domain.RepositotyInterfaces;
+using Application.Entities.SqlEntities.UsersEntities;
+using Application.GenericResult;
+using Application.RepositotyInterfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -127,6 +127,25 @@ namespace Infrastructure.Persistence.Repositories
 
 
         public async Task<bool> IsUserExistsAsync(Guid id, CancellationToken ct = default)
-            => await _context.AppUsers.AnyAsync(u => u.Id == id, ct);   
+            => await _context.AppUsers.AnyAsync(u => u.Id == id, ct);
+
+        public async Task<GenericResult<bool>> RemoveUserAsync(Guid userId, CancellationToken ct = default)
+        {
+            if (!await IsUserExistsAsync(userId, ct))
+                return GenericResult<bool>.Failure(ErrorType.NotFound, "User not found.");
+            try
+            {
+                var user = await _context.AppUsers.FirstOrDefaultAsync(u => u.Id == userId, ct);
+                _context.AppUsers.Remove(user!);
+                var _savingResult = await _context.SaveChangesAsync(ct);
+                if (_savingResult <= 0)
+                    return GenericResult<bool>.Failure(ErrorType.DatabaseError, "Failed to remove the user from database.");
+                return GenericResult<bool>.Success(true, "User has been removed successfully!");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(ErrorType.DatabaseError, $"An error occurred while removing the user: {ex.Message}");
+            }
+        }
     }
 }
