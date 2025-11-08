@@ -21,12 +21,12 @@ namespace Application.Entities.SqlEntities.SecurityEntities
         public DateTime? RevokedAt { get; set; }
         public string? ReplacedByToken { get; set; } = null!;
 
-        public Guid? DeviceId { get; set; } = Guid.Empty;
+        public Guid DeviceId { get; set; } = Guid.Empty;
 
         public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
         public bool IsActive => !Revoked && !IsExpired;
 
-        public static UserRefreshToken Create(Guid userId, string tokenHash, string tokenSalt, DateTime expiresAt, Guid? deviceId )
+        public static UserRefreshToken Create(Guid userId, string tokenHash, string tokenSalt, DateTime expiresAt, Guid deviceId )
         {
             if (userId == Guid.Empty || tokenHash == null || tokenSalt == null || expiresAt < DateTime.UtcNow)
                 throw new ArgumentException("Wrong Data!");

@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Application.RuleServices
 {
-    public interface IRefreshTokenHashService
+    public interface IHashingService
     {
+        (byte[] Hash, byte[] Salt) Hash(string input);
+        bool Verify(string input, byte[] hash, byte[] salt);
     }
 }

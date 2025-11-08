@@ -127,6 +127,13 @@ namespace Infrastructure.Persistence.Repositories
                     .FirstOrDefaultAsync(d => d.DeviceMACAddress == deviceMACAddress)
             );
 
+        public async Task<GenericResult<Guid>> GetDeviceIdByMACAddressAsync(string deviceMACAddress)
+             => GenericResult<Guid>.Success(
+                await _context.AppDevices
+                    .AsNoTracking()
+                    .Where(d => d.DeviceMACAddress == deviceMACAddress).Select(d => d.Id).SingleAsync()
+             );
+
         public async Task<GenericResult<bool>> RemoveAppDeviceByMACAddressAsync(string deviceMACAddress)
         {
             if (string.IsNullOrEmpty(deviceMACAddress))

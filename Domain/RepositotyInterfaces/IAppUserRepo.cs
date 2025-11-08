@@ -15,6 +15,7 @@ namespace Application.RepositotyInterfaces
         Task<GenericResult<AppUser>> AddUserAsync(AppUser user, CancellationToken ct = default);
         Task<GenericResult<AppUser>> UpdateUserAsync(AppUser user, CancellationToken ct = default);
         Task<GenericResult<string?>> AddOrUpdateUserImageAsync(IFormFileCollection imageFile, AppUser user, CancellationToken ct = default);
+        Task<GenericResult<(string email, string userName)>> GetUserInfoAsync(Guid userId, CancellationToken ct = default);
         Task<GenericResult<bool>> RemoveUserAsync(Guid userId, CancellationToken ct = default);
     }
 }

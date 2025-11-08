@@ -147,5 +147,29 @@ namespace Infrastructure.Persistence.Repositories
                 return GenericResult<bool>.Failure(ErrorType.DatabaseError, $"An error occurred while removing the user: {ex.Message}");
             }
         }
+
+        public async Task<GenericResult<(string email, string userName)>> GetUserInfoAsync(Guid userId, CancellationToken ct = default)
+        {
+            if (userId == Guid.Empty)
+                return  GenericResult<(string email, string userName)>.Failure(ErrorType.InvalidData, "UserId cannot be empty");
+            try
+            {
+                var user = await _context.AppUsers
+                    .Include(u => u.IdentityUser)
+                    .FirstOrDefaultAsync(u => u.Id == userId, ct);
+                if (user == null || user.IdentityUser == null || String.IsNullOrEmpty(user.IdentityUser.UserName) || String.IsNullOrEmpty(user.IdentityUser.Email))
+                    return GenericResult<(string email, string userName)>.Failure(ErrorType.NotFound, "User not found.");
+
+                (string _email, string _userName) = (user.IdentityUser.Email , user.IdentityUser.UserName);
+
+                return GenericResult<(string email, string userName)>.Success(
+                    (_email, _userName),
+                    "User info retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<(string email, string userName)>.Failure(ErrorType.DatabaseError, $"An error occurred while retrieving user info: {ex.Message}");
+            }
+        }
     }
 }

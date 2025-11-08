@@ -53,6 +53,7 @@ namespace Infrastructure.Persistence.Repositories
                 .AsNoTracking()
                 .Where(d => d.DeviceMACAddress == deviceMACAddress)
                 .SelectMany(d => d.RefreshTokens.Where(t => t.IsActive))
+                .OrderBy(t => t.CreatedAt)
                 .ToListAsync()
             );
 

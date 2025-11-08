@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.Abstractions.Messaging.EmailBodies
 {
-    public class EmailBody
+    public class RedirectionEmailBody
     {
         public static string RedirectionMail(string baseUrl ,string email, string emailMessage, string token, string component, string shortMessage)
         {

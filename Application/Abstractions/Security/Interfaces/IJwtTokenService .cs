@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace Application.Abstractions.Security.Interfaces
 {
-    public interface IGenerateTokenService
+    public interface IJwtTokenService
     {
         (string token, DateTime expiresUtc) GenerateAccessToken(IEnumerable<Claim> claims);
-        string GenerateRefreshToken();
     }
 }

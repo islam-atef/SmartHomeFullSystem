@@ -26,13 +26,6 @@ namespace Infrastructure.Persistence.Repositories
            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
         }
 
-        public async Task<UserRefreshToken?> GetByDeviceIdAsync(Guid deviceId, CancellationToken ct = default)
-        {
-            return await _context.UserRefreshTokens
-          .AsNoTracking()
-          .FirstOrDefaultAsync(t => t.DeviceId == deviceId, ct);
-        }
-
         public async Task<IEnumerable<UserRefreshToken>> GetUserTokensAsync(Guid userId, CancellationToken ct = default)
         {
             return await _context.UserRefreshTokens

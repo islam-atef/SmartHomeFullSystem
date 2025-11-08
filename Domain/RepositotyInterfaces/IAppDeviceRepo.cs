@@ -14,6 +14,7 @@ namespace Domain.RepositotyInterfaces
         Task<GenericResult<AppDevice>> AddAppDeviceAsync(string deviceMACAddress, string deviceIP, string name, string type);
 
         Task<GenericResult<List<AppDevice>>> GetAllDevicesAsync();
+        Task<GenericResult<Guid>> GetDeviceIdByMACAddressAsync(string deviceMACAddress);
         Task<GenericResult<List<AppDevice>>> GetAllDevicesOfUserAsync(Guid appUserId);
         Task<GenericResult<AppDevice>> GetAppDeviceByMACAddressAsync(string deviceMACAddress);
         Task<GenericResult<AppDevice>> GetAppDeviceByIdAsync(Guid appDeviceId);

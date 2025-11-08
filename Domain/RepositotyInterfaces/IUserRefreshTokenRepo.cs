@@ -20,8 +20,6 @@ namespace Application.RepositotyInterfaces
 
         Task<UserRefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct = default);
 
-        Task<UserRefreshToken?> GetByDeviceIdAsync(Guid deviceId, CancellationToken ct = default);
-
         Task<IEnumerable<UserRefreshToken>> GetUserTokensAsync(Guid userId, CancellationToken ct = default);
 
         Task<GenericResult<bool>> RevokeTokenAsync(Guid tokenId, CancellationToken ct = default);

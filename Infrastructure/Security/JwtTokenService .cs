@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Security
 {
-    public class JwtTokenService : IGenerateTokenService
+    public class JwtTokenService : IJwtTokenService
     {
         private readonly IConfiguration _config;
         public JwtTokenService(IConfiguration config)
@@ -38,16 +38,6 @@ namespace Infrastructure.Security
 
             // 3- Return the token string and expiration
             return (new JwtSecurityTokenHandler().WriteToken(token), expires);
-        }
-
-        public string GenerateRefreshToken()
-        {
-            // 1- Generate a secure random 64-byte array 
-            var randomBytes = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            // 2- Return as Base64 string
-            return Convert.ToBase64String(randomBytes);
         }
     }
 }

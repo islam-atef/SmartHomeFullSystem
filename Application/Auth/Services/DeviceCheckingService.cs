@@ -1,4 +1,15 @@
-﻿using Application.Auth.Interfaces;
+﻿using Application.Abstractions.Cashing.interfaces;
+using Application.Abstractions.Messaging.DTOs;
+using Application.Abstractions.Messaging.EmailBodies;
+using Application.Abstractions.Messaging.Interfaces;
+using Application.Auth.DTOs;
+using Application.Auth.Interfaces;
+using Application.Entities.SqlEntities.UsersEntities;
+using Application.GenericResult;
+using Application.RepositotyInterfaces;
+using Application.RuleServices;
+using Domain.Entities.SqlEntities.UsersEntities;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +20,133 @@ namespace Application.Auth.Services
 {
     public class DeviceCheckingService : IDeviceCheckingService
     {
+        private readonly IEmailService _email;
+        private readonly IAuthService _auth;
+        private readonly IHashingService _hashing;
+        private readonly IOtpDeviceCacheStore _otpDeviceCache;
+        private readonly IUnitOfWork _work;
+        private readonly IConfiguration _configuration;
+        public DeviceCheckingService(IEmailService email, IAuthService auth, IUnitOfWork work, IConfiguration configuration, IHashingService hashing, IOtpDeviceCacheStore otpDeviceCache)
+        {
+            _email = email;
+            _auth = auth;
+            _work = work;
+            _configuration = configuration;
+            _hashing = hashing;
+            _otpDeviceCache = otpDeviceCache;
+        }
+
+        public async Task<GenericResult<bool>> SendDeviceCheckingOtpAsync(LoginRequestDTO req, Guid appUserId)
+        {
+            if (string.IsNullOrEmpty(req.Email) && string.IsNullOrEmpty(req.Username))
+            {
+                return GenericResult<bool>.Failure(
+                    ErrorType.InvalidData,
+                    "Email or Username must be provided to send device checking email.");
+            }
+            try
+            {
+                var email = req.Email ?? (await _work.AppUser.GetUserInfoAsync(appUserId)).Value.email;
+                // generate OTP
+                var otp = new Random().Next(100000, 999999);
+                // hash OTP
+                var (otpHash, otpSalt) = _hashing.Hash(otp.ToString());
+                // create OTP device challenge cache entry
+                var otpDeviceChallenge = Domain.Entities.RedisEntities.OtpDeviceChallengeCache.Create(
+                    appUserId,
+                    Convert.ToBase64String(otpHash),
+                    Convert.ToBase64String(otpSalt),
+                    req.DeviceIP,
+                    req.DeviceMACAddress,
+                    email
+                    );
+                // save in Redis
+                await _otpDeviceCache.SaveAsync(otpDeviceChallenge);
+                // create Email Body
+                var otpQuestionUrl = _configuration["FronEndInfo:FronEndUrl:OtpQuestionUrl"]!;
+                var otpQuestionComponent = _configuration["FronEndInfo:FronEndComponent:OtpQuestionComponent"]!;
+                var Email = new EmailDTO
+                   (
+                   email,
+                   "islamahmed920.al@gmail.com",
+                   "Device Access Authenticaion Check",
+                   OTPEmailBody.OtpCheckingMail(
+                       otpQuestionUrl, email, otp,
+                       otpQuestionComponent, otpDeviceChallenge.Id
+                       )
+                   );
+                // send Email
+                await _email.SendEmailAsync(Email);
+                return GenericResult<bool>.Success(true, "Device verification code sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(
+                    ErrorType.Conflict,
+                    $"An error occurred while sending device verification code: {ex.Message}");
+            }
+        }
+
+        public async Task<GenericResult<AuthResponseDTO>> VerifyOtpAsync(Guid questionId, int otpAnswer)
+        {
+            if (otpAnswer < 100000 || otpAnswer > 999999)
+                return GenericResult<AuthResponseDTO>.Failure(ErrorType.InvalidData,"OTP answer must be a 6-digit number.");     
+            if (questionId == Guid.Empty)
+                return GenericResult<AuthResponseDTO>.Failure(ErrorType.InvalidData, "Invalid question ID.");   
+            try
+            {
+                var otpChallenge =  await _otpDeviceCache.GetAsync(questionId);
+                if (otpChallenge == null)
+                    return GenericResult<AuthResponseDTO>.Failure(ErrorType.NotFound, "OTP challenge not found or has expired, try to login again!");
+                var isValid = _hashing.Verify(
+                    otpAnswer.ToString(),
+                    Convert.FromBase64String(otpChallenge.OtpCodeHash),
+                    Convert.FromBase64String(otpChallenge.OtpSalt)
+                    );
+                if (!isValid)
+                    return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "Invalid OTP answer.");
+                else
+                {
+                    // check if device already exists
+                    var existingDevice = await _work.AppDevice.CheckDeviceExistsAsync(otpChallenge.DeviceMACAddress);
+                    AppDevice deviceResult = null!;
+                    if (!existingDevice.Value)
+                    {
+                        // save trusted device info in DB
+                        deviceResult = (await _work.AppDevice.AddAppDeviceAsync(
+                            otpChallenge.DeviceMACAddress,
+                            otpChallenge.DeviceIP,
+                            "Default Device Name",
+                            "Default Device Type"
+                            )).Value!;
+                    }
+                    else
+                    {
+                        deviceResult = (await _work.AppDevice.GetAppDeviceByMACAddressAsync(otpChallenge.DeviceMACAddress)).Value!;
+                        // Update Device IP
+                        if (deviceResult.DeviceIP != otpChallenge.DeviceIP)
+                        {
+                            await _work.AppDevice.UpdateAppDeviceIPAsync(otpChallenge.DeviceMACAddress, otpChallenge.DeviceIP);
+                        }
+                    }
+                    if (deviceResult == null)
+                    {
+                        return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, "An error occurred while retrieving or creating the device.");
+                    }
+                    // Assign Device to User
+                    await _work.AppDevice.AssignDeviceToUserAsync(otpChallenge.DeviceMACAddress, otpChallenge.AppUserId);
+                    // OTP is valid, remove the challenge from cache
+                    await _otpDeviceCache.RemoveAsync(questionId);
+                    // Get Tokens
+                    var tokensResult = await _auth.IssueTokensAsync(otpChallenge.AppUserId, otpChallenge.Email!, deviceResult.Id);
+                    // return success
+                    return GenericResult<AuthResponseDTO>.Success(tokensResult, "OTP verified successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict,$"An error occurred while verifying OTP: {ex.Message}");    
+            }
+        }
     }
 }

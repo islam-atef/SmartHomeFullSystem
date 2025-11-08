@@ -16,7 +16,7 @@ namespace Application.DI
         {
             // Register your application-layer services here
             services.AddScoped<IAuthService, AuthService>();
-
+            services.AddScoped<IDeviceCheckingService, DeviceCheckingService>();
             return services;
         }
     }

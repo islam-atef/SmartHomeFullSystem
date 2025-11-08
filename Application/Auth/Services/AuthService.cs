@@ -20,37 +20,52 @@ using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
+using Application.RuleServices;
+using Microsoft.Extensions.Configuration;
 
 namespace Application.Auth.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IGenerateTokenService _tokens;
+        private readonly IConfiguration _configuration;
+        private readonly ICustomTokenService _customTokens;
+        private readonly IJwtTokenService _jwtTokens;
+        private readonly IHashingService _hashing;
         private readonly IIdentityManagement _users;
         private readonly IDateTimeProvider _clock;
         private readonly IEmailService _email;
         private readonly IUnitOfWork _work;
-        
+        private readonly IDeviceCheckingService _DeviceCheck;
 
         public AuthService(
             IIdentityManagement users,
-            IGenerateTokenService tokens,
+            ICustomTokenService customTokens,
+            IHashingService hashing,
+            IJwtTokenService jwtTokens,
             IDateTimeProvider clock,
             IEmailService email,
-            IUnitOfWork work)
+            IUnitOfWork work,
+            IConfiguration configuration,
+            IDeviceCheckingService deviceCheck)
         {
             _users = users;
-            _tokens = tokens;
+            _customTokens = customTokens;
+            _jwtTokens = jwtTokens;
+            _hashing = hashing;
             _clock = clock;
             _email = email;
             _work = work;
+            _configuration = configuration;
+            _DeviceCheck = deviceCheck;
         }
+
+        private int RTExpriresInDays = 7;
 
         private async Task SendActivationEmail(string email) // [Done]
         {
             string activationToken = await _users.GenerateEmailConfirmationTokenAsync(email);
-            var activationUrl = $"https://yourfrontend.com/activate";
-            var activationComponent = "Activate";
+            var activationUrl = _configuration["FronEndInfo:FronEndUrl:ActivationUrl"]!;
+            var activationComponent = _configuration["FronEndInfo:FronEndComponent:ActivationComponent"]!;
             var shortMessage = "Activate";
             var emailMessage = "Activate your account by clicking the link below:";
 
@@ -59,7 +74,7 @@ namespace Application.Auth.Services
                email,
                "islamahmed920.al@gmail.com",
                "Email Activation",
-               EmailBody.RedirectionMail(
+               RedirectionEmailBody.RedirectionMail(
                    activationUrl, email, emailMessage,
                    activationToken, activationComponent, shortMessage
                    )
@@ -70,9 +85,9 @@ namespace Application.Auth.Services
 
         private async Task SendResetPasswordEmail(string email) // [Done]
         {
-            string activationToken = await _users.GeneratePasswordResetTokenAsync(email);
-            var activationUrl = $"https://yourfrontend.com/activate";
-            var activationComponent = "Reset-Password";
+            string resetPWToken = await _users.GeneratePasswordResetTokenAsync(email);
+            var resetPWUrl = _configuration["FronEndInfo:FronEndUrl:ResetPasswordUrl"]!;
+            var resetPWComponent = _configuration["FronEndInfo:FronEndComponent:ResetPasswordComponent"]!;
             var shortMessage = "Password reset";
             var emailMessage = "Click on the button to reset your password";
 
@@ -81,15 +96,15 @@ namespace Application.Auth.Services
                email,
                "islamahmed920.al@gmail.com",
                "Reset Password request",
-               EmailBody.RedirectionMail(
-                   activationUrl, email, emailMessage,
-                   activationToken, activationComponent, shortMessage)
+               RedirectionEmailBody.RedirectionMail(
+                   resetPWUrl, email, emailMessage,
+                   resetPWToken, resetPWComponent, shortMessage)
                );
 
             await _email.SendEmailAsync(Email);
         }
 
-        private async Task<AuthResponseDTO?> IssueTokensAsync(UserIdentityDTO user) // [Done]
+        private async Task<AuthResponseDTO?> IssueTokensAsync(UserIdentityDTO user, Guid deviceId) // [Done]
         {
             var appUserId = await _users.GetAppUserIdAsync(user.Id);
             var claims = new List<Claim>
@@ -97,20 +112,56 @@ namespace Application.Auth.Services
                 new(ClaimTypes.NameIdentifier, appUserId.ToString()), // Use AppUserId as NameIdentifier, not IdentityUserId for security.
                 new(ClaimTypes.Name, user.UserName ?? ""),
                 new(ClaimTypes.Email, user.Email ?? ""),
-                // Device info claim can be added here if needed
+                new(ClaimTypes.WindowsDeviceClaim,deviceId.ToString())// Device info claim can be added here if needed
             };
-
-            var (access, expires) = _tokens.GenerateAccessToken(claims);
-            var refresh = _tokens.GenerateRefreshToken(); // احفظه في DB لو هتشتغل Refresh flow
-            // Generate the Hash and Salt for the refresh token and save them in DB
-
-
+            // create Access jwt token 
+            var (access, expires) = _jwtTokens.GenerateAccessToken(claims);
+            // create Refresh token
+            var refresh = _customTokens.GenerateRefreshToken(); 
+            // Generate the Hash and Salt for the refresh token
+            var (refreshHash, refreshSalt) = _hashing.Hash(refresh);
+            // save the refresh token in the DataBase
+            var refreshTokenEntity = _work.UserRefreshToken.SaveTokenAsync(
+                appUserId,
+                Convert.ToBase64String(refreshSalt),
+                Convert.ToBase64String(refreshHash),
+                RTExpriresInDays,
+                deviceId
+                );
             if (access == null || refresh == null)
                 return null;
             return new AuthResponseDTO { AccessToken = access, RefreshToken = refresh, ExpiresAtUtc = expires };
         }
 
-        
+        public async Task<AuthResponseDTO?> IssueTokensAsync(Guid userId, string email, Guid deviceId) // [Done]
+        {
+            var appUser = await _work.AppUser.GetUserInfoAsync(userId);
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, userId.ToString()), // Use AppUserId as NameIdentifier, not IdentityUserId for security.
+                new(ClaimTypes.Name, appUser.Value.userName ),
+                new(ClaimTypes.Email, email),
+                new(ClaimTypes.WindowsDeviceClaim,deviceId.ToString())// Device info claim can be added here if needed
+            };
+            // create Access jwt token 
+            var (access, expires) = _jwtTokens.GenerateAccessToken(claims);
+            // create Refresh token
+            var refresh = _customTokens.GenerateRefreshToken();
+            // Generate the Hash and Salt for the refresh token
+            var (refreshHash, refreshSalt) = _hashing.Hash(refresh);
+            // save the refresh token in the DataBase
+            var refreshTokenEntity = _work.UserRefreshToken.SaveTokenAsync(
+                userId,
+                Convert.ToBase64String(refreshSalt),
+                Convert.ToBase64String(refreshHash),
+                RTExpriresInDays,
+                deviceId
+                );
+            if (access == null || refresh == null)
+                return null;
+            return new AuthResponseDTO { AccessToken = access, RefreshToken = refresh, ExpiresAtUtc = expires };
+        }
+
         public async Task<GenericResult<string>> RegisterAsync(RegisterRequestDTO req) // [Done]
         {
             if (req == null)
@@ -222,7 +273,7 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginRequestDTO req) // [Done] // [Check if the login done from a Knwon device (still)]
+        public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginRequestDTO req) // [Done]
         {
             if (req == null)
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.NullableValue);
@@ -249,14 +300,14 @@ namespace Application.Auth.Services
                     var check = await _users.CheckPasswordSignInAsync(findUser.Email,req.Password);
                     if (!check)
                         return GenericResult<AuthResponseDTO>.Failure(ErrorType.Validation, "The Password is Wrong");
-
-                    // 4[] Check if the login done from a known Device "MACAddress" (Optional)-> if Yes, proceed to issue Tokens. -> if No,send a Checking Mail, then create new Device Entity and link it to the user.
+                    // Get the AppUserId for the user:
                     var appUserId = await _users.GetAppUserIdAsync(findUser.Id);
+                    // 4[] Check if the login done from a known Device "MACAddress" (Optional)-> 
                     if (!(await _work.AppDevice.CheckDeviceAssignedToUserAsync(req.DeviceMACAddress,appUserId)).Value)
                     {
-                        // Device is not assigned to this user:
-                        // Send a Checking Mail to the user by using DeviceCheckingService (Optional)
-                        // _DeviceCheckingService.SendDeviceCheckingEmail(LoginRequestDTO req, Guid appUserId); // we makesure that the req contains the Email
+                        // Device is not assigned to this user
+                        // Send a Checking Mail to the user by using DeviceCheckingService 
+                        await _DeviceCheck.SendDeviceCheckingOtpAsync(req, appUserId); 
                         return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "The Used Device is not Authorized!");
                     }
                     else
@@ -266,8 +317,10 @@ namespace Application.Auth.Services
                         {
                             await _work.AppDevice.UpdateAppDeviceIPAsync(req.DeviceMACAddress, req.DeviceIP);
                         }
+                        // Get the DeviceId
+                        var deviceIdResult = await _work.AppDevice.GetDeviceIdByMACAddressAsync(req.DeviceMACAddress);
                         // Finally[] Get the Tokens:
-                        var returnValue = await IssueTokensAsync(findUser!);
+                        var returnValue = await IssueTokensAsync(findUser!, deviceIdResult.Value);
                         // check if the Token Generation is successfull:
                         if (returnValue == null)
                             return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, "Token Generation Failed");
@@ -279,11 +332,56 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken) // [Check if the Request done from the device]
+        public async Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken, string deviceMAC) // [Check if the Request done from the device]
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(refreshToken) || string.IsNullOrWhiteSpace(deviceMAC))
+                return GenericResult<AuthResponseDTO>.Failure(ErrorType.NullableValue, "Missing data!.");
+            try
+            {
+                // 1[] Get the Device Active Tokens by MAC Address
+                var deviceTokensResult = await _work.DeviceSession.GetAllActiveTokensOfDeviceAsync(deviceMAC);
+                if (deviceTokensResult.Value!.Count != 1)
+                    return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "The Device is not Authorized!");
+
+                // Get the Active Token
+                var oldActiveToken = deviceTokensResult.Value[0];
+
+                // 2[] Check the Only Actice Token
+                var isValid = _hashing.Verify(
+                    refreshToken,
+                    Convert.FromBase64String(oldActiveToken.TokenHash),
+                    Convert.FromBase64String(oldActiveToken.TokenSalt)
+                    );
+
+                // If The Token isn't Valid
+                if (isValid == false)
+                    return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "Invalid Token!");
+
+                // If The Token is Valid
+                // 1- create new tokens
+                var userInfo = await _work.AppUser.GetUserInfoAsync(oldActiveToken.AppUserId);
+                var tokens = await IssueTokensAsync(oldActiveToken.AppUserId, userInfo.Value.email, oldActiveToken.DeviceId);
+                // 2- Hash the new created token
+                var refreshTokenHashData = _hashing.Hash(tokens!.RefreshToken);
+                // 3- Rotate the Refresh Tokens, and create new UserRefreshToken (Rotate method aready create new token).
+                var newTKId = await _work.UserRefreshToken.RotateRT_DBProcessAsync(
+                    oldActiveToken.Id,
+                    oldActiveToken.AppUserId,
+                    Convert.ToBase64String(refreshTokenHashData.Salt),
+                    Convert.ToBase64String(refreshTokenHashData.Hash),
+                    RTExpriresInDays);
+
+                if (newTKId.IsSuccess)
+                    return GenericResult<AuthResponseDTO>.Success(tokens, "Refresh Request has been Done!");
+
+                return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, "Can not create New Tokens!");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, ex.Message);
+            }
         }
-         
+
         public async Task<GenericResult<bool>> DeleteAccount(string email) // [Done]
         {
             if (string.IsNullOrWhiteSpace(email))
