@@ -16,6 +16,7 @@ namespace Application.Auth.Interfaces
         Task<GenericResult<string>> SendEmailForForgottenPassword(string email);
         Task<GenericResult<string>> ResetPassword(ResetPasswordDTO rpw);
         Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginRequestDTO req);
+        Task<GenericResult<bool>> LogoutAsync(LogoutDTO req);
         Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken, string deviceMAC);
         Task<GenericResult<bool>> DeleteAccount(string email);
     }

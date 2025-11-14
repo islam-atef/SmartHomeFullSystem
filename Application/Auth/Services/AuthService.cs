@@ -252,7 +252,7 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<string>> ResetPassword(ResetPasswordDTO rpw) // [Done]
+        public async Task<GenericResult<string>> ResetPassword(ResetPasswordDTO rpw) // [work just with foget password]
         {
             if (rpw == null)
                 return GenericResult<string>.Failure(ErrorType.NullableValue, "the input parameter is null");
@@ -267,7 +267,6 @@ namespace Application.Auth.Services
                 if (resetPwResult != null)
                     return GenericResult<string>.Success("Done", "Password Has Changed");
 
-                // Aggregate errors for more info
                 return GenericResult<string>.Failure(ErrorType.Conflict, resetPwResult);
             }
             catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
@@ -332,7 +331,7 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken, string deviceMAC) // [Check if the Request done from the device]
+        public async Task<GenericResult<AuthResponseDTO>> RefreshAsync(string refreshToken, string deviceMAC) // [Done]
         {
             if (string.IsNullOrWhiteSpace(refreshToken) || string.IsNullOrWhiteSpace(deviceMAC))
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.NullableValue, "Missing data!.");
@@ -409,6 +408,39 @@ namespace Application.Auth.Services
                     return GenericResult<bool>.Failure(ErrorType.Validation, "this UserName or the Email is not correct !");
             }
             catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
+        }
+
+        public async Task<GenericResult<bool>> LogoutAsync(LogoutDTO req) // [Done]
+        {
+            if (req == null)
+                return GenericResult<bool>.Failure(ErrorType.NullableValue, "There Is No Data Have been Sent");
+            try
+            {
+                // 1- Get the Device Active Tokens by MAC Address
+                var deviceTokensResult = await _work.DeviceSession.GetAllActiveTokensOfDeviceAsync(req.DeviceMAC);
+                if (deviceTokensResult.Value!.Count != 1)
+                    return GenericResult<bool>.Failure(ErrorType.Unauthorized, "The Device is not Authorized!");
+                // Get the Active Token
+                var oldActiveToken = deviceTokensResult.Value[0];
+                // 2- Check the Only Actice Token
+                var isValid = _hashing.Verify(
+                    req.RefreshToken,
+                    Convert.FromBase64String(oldActiveToken.TokenHash),
+                    Convert.FromBase64String(oldActiveToken.TokenSalt)
+                    );
+                // If The Token isn't Valid
+                if (isValid == false)
+                    return GenericResult<bool>.Failure(ErrorType.Unauthorized, "Invalid Token!");
+                // If The Token is Valid
+                var logoutResult = await _work.UserRefreshToken.RevokeTokenAsync(oldActiveToken.Id);
+                if (logoutResult.IsSuccess)
+                    return GenericResult<bool>.Success(true, "Logout Successful");
+                return GenericResult<bool>.Failure(ErrorType.Conflict, "Logout Failed");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
+            }
         }
     }
 }

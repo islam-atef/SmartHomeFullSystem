@@ -48,7 +48,6 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-
         public async Task<GenericResult<string?>> AddOrUpdateUserImageAsync(IFormFileCollection imageFiles,AppUser user,CancellationToken ct = default)
         {
             // 1) Validate input
@@ -99,7 +98,6 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-
         public async Task<GenericResult<AppUser>> UpdateUserAsync(AppUser user, CancellationToken ct = default)
         {
             if (user == null)
@@ -124,7 +122,6 @@ namespace Infrastructure.Persistence.Repositories
                 return GenericResult<AppUser>.Failure(ErrorType.DatabaseError, $"An error occurred while Updating the user: {ex.Message}");
             }
         }
-
 
         public async Task<bool> IsUserExistsAsync(Guid id, CancellationToken ct = default)
             => await _context.AppUsers.AnyAsync(u => u.Id == id, ct);

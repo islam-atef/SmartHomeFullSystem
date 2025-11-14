@@ -1,4 +1,6 @@
 ﻿using Application.Abstractions.Security.Interfaces;
+using Infrastructure.Security.ConfigurationOptions;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +12,16 @@ namespace Infrastructure.Security
 {
     public class CustomTokenService : ICustomTokenService
     {
+        private readonly RefreshTokenOptions _refresh;
+        public CustomTokenService(IOptions<RefreshTokenOptions> refreshOptions)
+        {
+            _refresh = refreshOptions.Value;
+        }
+
         public string GenerateRefreshToken()
         {
             // 1- Generate a secure random 64-byte array 
-            var randomBytes = new byte[64];
+            var randomBytes = new byte[_refresh.TokenSizeBytes];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
             // 2- Return as Base64 string

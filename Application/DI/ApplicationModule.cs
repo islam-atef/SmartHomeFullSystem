@@ -14,9 +14,14 @@ namespace Application.DI
     {
         public static IServiceCollection AddApplicationService(this IServiceCollection services)
         {
-            // Register your application-layer services here
+            #region Register your application-layer services here
+            // 1- Auth Service
             services.AddScoped<IAuthService, AuthService>();
+            // 2- Device Checking Service
             services.AddScoped<IDeviceCheckingService, DeviceCheckingService>();
+
+            #endregion
+
             return services;
         }
     }

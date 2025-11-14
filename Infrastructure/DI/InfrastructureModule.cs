@@ -9,6 +9,7 @@ using Infrastructure.Cashing;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Security;
+using Infrastructure.Security.ConfigurationOptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,26 +26,38 @@ namespace Infrastructure.DI
     {
         public static IServiceCollection AddInfrastructureService(this IServiceCollection services,IConfiguration configuration)
         {
-            // 1️)  read connection string from configuration and register DbContext
+            #region 1️)  read connection string from configuration and register DbContext
             var connectionString = configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
+            #endregion
 
-            // 2) register Redis Connection Multiplexer
+
+            #region 2) register Redis Connection Multiplexer
             // read connection string from appsettings.json
             var redisConn = configuration.GetConnectionString("Redis") ?? "localhost:6379";
             // create singleton multiplexer (thread-safe)
             services.AddSingleton<IConnectionMultiplexer>(
                 _ => ConnectionMultiplexer.Connect(redisConn));
-            // 1- OtpDeviceCheck
+            // Redis Cache Store service
+            // 1- OtpDevice Checking Redis Store service
             services.AddScoped<IOtpDeviceCacheStore, OtpDeviceCacheStore>();
+            #endregion
 
 
-            // 3) register repositories, unit of work, etc.
+            #region 3) Options binding
+            services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+            services.Configure<RefreshTokenOptions>(configuration.GetSection("Jwt"));
+            #endregion
+
+
+            #region 4) register repositories, unit of work, etc.
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+            #endregion
 
-            // 4) any other infra services   
+
+            #region 5) any other infra services   
             // 1- Identity configuration
             services.AddAppIdentityService();
             // 2- Identity Management
@@ -55,6 +68,9 @@ namespace Infrastructure.DI
             services.AddScoped<ICustomTokenService, CustomTokenService>();
             // 5- Hashing Service
             services.AddScoped<IHashingService, HashingService>();
+            // 6- TimeProvider Service 
+            services.AddSingleton(TimeProvider.System);
+            #endregion
 
             return services;
         }
