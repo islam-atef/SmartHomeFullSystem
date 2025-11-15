@@ -1,18 +1,25 @@
 ﻿using Application.Abstractions.Cashing.interfaces;
 using Application.Abstractions.Identity;
+using Application.Abstractions.Image;
+using Application.Abstractions.Messaging.Interfaces;
 using Application.Abstractions.Security.Interfaces;
+using Application.Abstractions.Time;
 using Application.Auth.Interfaces;
 using Application.Auth.Services;
 using Application.RepositotyInterfaces;
 using Application.RuleServices;
 using Infrastructure.Cashing;
 using Infrastructure.Identity;
+using Infrastructure.Images;
+using Infrastructure.Messaging;
 using Infrastructure.Persistence;
 using Infrastructure.Security;
 using Infrastructure.Security.ConfigurationOptions;
+using Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -24,11 +31,13 @@ namespace Infrastructure.DI
 {
     public static class InfrastructureModule
     {
-        public static IServiceCollection AddInfrastructureService(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration configuration)
         {
-            #region 1️)  read connection string from configuration and register DbContext
-            var connectionString = configuration.GetConnectionString("DefaultConnection") 
+            #region 1️) Register DbContext with SQL Server
+            // read connection string from configuration
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            // Register AppDbContext with the correct options
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
             #endregion
@@ -44,7 +53,6 @@ namespace Infrastructure.DI
             // 1- OtpDevice Checking Redis Store service
             services.AddScoped<IOtpDeviceCacheStore, OtpDeviceCacheStore>();
             #endregion
-
 
             #region 3) Options binding
             services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
@@ -70,6 +78,12 @@ namespace Infrastructure.DI
             services.AddScoped<IHashingService, HashingService>();
             // 6- TimeProvider Service 
             services.AddSingleton(TimeProvider.System);
+            // 7- DateTimeProvider Service
+            services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+            // 8- Email Service
+            services.AddScoped<IEmailService, EmailService>();
+            // 9- Image Service
+            services.AddScoped<IImageService, ImageService>();
             #endregion
 
             return services;

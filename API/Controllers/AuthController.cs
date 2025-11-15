@@ -1,4 +1,5 @@
-﻿using Application.Auth.DTOs;
+﻿using API.ApiDTOs.AuthControllerDTOs.RequestDTOs;
+using Application.Auth.DTOs;
 using Application.Auth.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +11,19 @@ namespace API.Controllers
     {
         // Login and Logout endpoints :
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDTO req, CancellationToken ct = default)
+        public async Task<IActionResult> Login([FromBody] LoginReqDTO req, CancellationToken ct = default) // [Done ready for testing]
         {
-            var result = await auth.LoginAsync(req);
+            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var deviceIP = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var loginRequest = new LoginDTO
+            {
+                Email = req.Email,
+                Username = req.Username,
+                Password = req.Password,
+                DeviceMACAddress = deviceMAC,
+                DeviceIP = deviceIP
+            };
+            var result = await auth.LoginAsync(loginRequest);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch
@@ -26,9 +37,16 @@ namespace API.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LogoutDTO req, CancellationToken ct = default)
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default)// [Done ready for testing]
         {
-            var result = await auth.LogoutAsync(req);
+            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var logout = new LogoutDTO
+            {
+                RefreshToken = req.RefreshToken,
+                UserEmail = req.UserEmail,
+                DeviceMAC = deviceMAC
+            };
+            var result = await auth.LogoutAsync(logout);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch
@@ -45,9 +63,16 @@ namespace API.Controllers
 
         // Regiser and Activation endpoints :
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO req, CancellationToken ct = default)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO req, CancellationToken ct = default) // [Done ready for testing]
         {
-            var result = await auth.RegisterAsync(req);
+            var request = new RegisterDTO
+            {
+                Email = req.Email,
+                Username = req.Username,
+                Password = req.Password,
+                DisplayName = req.DisplayName
+            };
+            var result = await auth.RegisterAsync(request);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch
@@ -61,9 +86,19 @@ namespace API.Controllers
         }
 
         [HttpPost("activate-account")]
-        public async Task<IActionResult> ActivateAccount([FromBody] AccountActivationDTO accountActivationDTO, CancellationToken ct = default)
+        public async Task<IActionResult> ActivateAccount([FromBody] AccountActivationRequestDTO accountActivationDTO, CancellationToken ct = default) // [Done ready for testing]
         {
-            var result = await auth.AccountActivation(accountActivationDTO);
+            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var deviceIP = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var accountActivation= new AccountActivationDTO
+            {
+                UserEmail = accountActivationDTO.UserEmail,
+                ActivationToken = accountActivationDTO.ActivationToken,
+                DeviceMACAddress = deviceMAC,
+                DeviceIP = deviceIP
+            };
+
+            var result = await auth.AccountActivation(accountActivation);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch
@@ -112,22 +147,14 @@ namespace API.Controllers
             return Ok(result.Value);
         }
 
-        [HttpPost("change-password")]
-        public async Task<IActionResult> ChangePassword(CancellationToken ct = default)
-        {
-            throw new NotImplementedException();
-        }
-
-
 
 
         // Token Management endpoints :
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshTK, CancellationToken ct = default)
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshTK, CancellationToken ct = default) // [Done ready for testing]
         {
-            // For device MAC Address, we can get it from request headers or body. Here, assuming it's from body for simplicity.
-            string DeviceMAC = Request.Headers["Device-MAC"];
-            var result = await auth.RefreshAsync(refreshTK, DeviceMAC!);
+            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var result = await auth.RefreshAsync(refreshTK, deviceMAC!);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch

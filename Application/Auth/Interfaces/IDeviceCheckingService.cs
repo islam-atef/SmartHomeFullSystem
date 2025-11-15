@@ -10,7 +10,7 @@ namespace Application.Auth.Interfaces
 {
     public interface IDeviceCheckingService
     {
-        Task<GenericResult<bool>> SendDeviceCheckingOtpAsync(LoginRequestDTO req, Guid appUserId);
+        Task<GenericResult<bool>> SendDeviceCheckingOtpAsync(LoginDTO req, Guid appUserId);
         Task<GenericResult<AuthResponseDTO>> VerifyOtpAsync(Guid appUserId, int deviceCheckingCode);
     }
 }

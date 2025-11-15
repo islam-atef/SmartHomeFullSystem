@@ -10,6 +10,7 @@ using Application.RepositotyInterfaces;
 using Application.RuleServices;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,23 +21,33 @@ namespace Application.Auth.Services
 {
     public class DeviceCheckingService : IDeviceCheckingService
     {
+        //private readonly IAuthService _auth;
+        private readonly IServiceProvider _serviceProvider; // we do that to break the  circular dependency
         private readonly IEmailService _email;
-        private readonly IAuthService _auth;
         private readonly IHashingService _hashing;
         private readonly IOtpDeviceCacheStore _otpDeviceCache;
         private readonly IUnitOfWork _work;
         private readonly IConfiguration _configuration;
-        public DeviceCheckingService(IEmailService email, IAuthService auth, IUnitOfWork work, IConfiguration configuration, IHashingService hashing, IOtpDeviceCacheStore otpDeviceCache)
+        public DeviceCheckingService(
+            IEmailService email,
+            //IAuthService auth,
+            IServiceProvider serviceProvider, // we do that to break the  circular dependency
+            IUnitOfWork work,
+            IConfiguration configuration,
+            IHashingService hashing,
+            IOtpDeviceCacheStore otpDeviceCache
+            )
         {
             _email = email;
-            _auth = auth;
+            //_auth = auth;
+            _serviceProvider = serviceProvider; // we do that to break the  circular dependency
             _work = work;
             _configuration = configuration;
             _hashing = hashing;
             _otpDeviceCache = otpDeviceCache;
         }
 
-        public async Task<GenericResult<bool>> SendDeviceCheckingOtpAsync(LoginRequestDTO req, Guid appUserId)
+        public async Task<GenericResult<bool>> SendDeviceCheckingOtpAsync(LoginDTO req, Guid appUserId)
         {
             if (string.IsNullOrEmpty(req.Email) && string.IsNullOrEmpty(req.Username))
             {
@@ -138,7 +149,9 @@ namespace Application.Auth.Services
                     // OTP is valid, remove the challenge from cache
                     await _otpDeviceCache.RemoveAsync(questionId);
                     // Get Tokens
-                    var tokensResult = await _auth.IssueTokensAsync(otpChallenge.AppUserId, otpChallenge.Email!, deviceResult.Id);
+                    // we do that to break the  circular dependency
+                    var authService = _serviceProvider.GetRequiredService<IAuthService>();
+                    var tokensResult = await authService.IssueTokensAsync(otpChallenge.AppUserId, otpChallenge.Email!, deviceResult.Id);
                     // return success
                     return GenericResult<AuthResponseDTO>.Success(tokensResult, "OTP verified successfully.");
                 }

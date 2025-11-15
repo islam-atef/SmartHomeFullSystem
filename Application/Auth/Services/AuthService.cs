@@ -162,7 +162,7 @@ namespace Application.Auth.Services
             return new AuthResponseDTO { AccessToken = access, RefreshToken = refresh, ExpiresAtUtc = expires };
         }
 
-        public async Task<GenericResult<string>> RegisterAsync(RegisterRequestDTO req) // [Done]
+        public async Task<GenericResult<string>> RegisterAsync(RegisterDTO req) // [Done]
         {
             if (req == null)
                 return GenericResult<string>.Failure(ErrorType.NullableValue, "There Is No Data Have been Sent");
@@ -272,7 +272,7 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginRequestDTO req) // [Done]
+        public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginDTO req) // [Done]
         {
             if (req == null)
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.NullableValue);

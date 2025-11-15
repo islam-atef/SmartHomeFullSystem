@@ -2,6 +2,7 @@
 using Infrastructure.DI;
 using Infrastructure.Security.ConfigurationOptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -47,16 +48,20 @@ builder.Services
             }
         };
     });
-
+// register PhysicalFileProvider for serving static files
+builder.Services.AddSingleton<IFileProvider>(
+    new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
+);
 // Add services to the container.
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+builder.Services.AddSwaggerGen();
 
+
+var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -66,6 +71,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
+// Enable static files to serve content from wwwroot
+app.UseStaticFiles();
+
 
 app.MapControllers();
 

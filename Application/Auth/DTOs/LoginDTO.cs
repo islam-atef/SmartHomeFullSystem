@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.Auth.DTOs
 {
-    public class LoginRequestDTO
+    public class LoginDTO
     {
         public string? Email { get; init; } = default;
         public string? Username { get; init; } = default;
