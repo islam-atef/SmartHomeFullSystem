@@ -10,7 +10,11 @@ namespace Application.Abstractions.Messaging.EmailBodies
     {
         public static string RedirectionMail(string baseUrl ,string email, string emailMessage, string token, string component, string shortMessage)
         {
-            string encodeToken = Uri.EscapeDataString(token);
+            string encodeToken;
+            if (!string.IsNullOrEmpty(token))
+                encodeToken = Uri.EscapeDataString(token);
+            else
+                encodeToken = String.Empty;
             return
             $@"
                 <html>

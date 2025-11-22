@@ -1,4 +1,5 @@
 ﻿using Application.Entities.SqlEntities.RoomEntities;
+using Application.Entities.SqlEntities.SecurityEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -23,6 +24,8 @@ namespace Application.Entities.SqlEntities.UsersEntities
         public virtual ICollection<Home>? Homes { get; set; } = new HashSet<Home>();
 
         public virtual ICollection<AppDevice>? AppDevices { get; set; } = new HashSet<AppDevice>();
+
+        public virtual ICollection<UserRefreshToken>? UserRefreshTokens { get; set; } = new HashSet<UserRefreshToken>();
 
         public static AppUser Create(Guid identityUserId)
         {

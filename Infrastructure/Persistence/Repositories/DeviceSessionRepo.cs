@@ -48,15 +48,32 @@ namespace Infrastructure.Persistence.Repositories
         }
 
         public async Task<GenericResult<List<UserRefreshToken>>> GetAllActiveTokensOfDeviceAsync(string deviceMACAddress)
-            => GenericResult<List<UserRefreshToken>>.Success(
-                await _context.AppDevices
-                .AsNoTracking()
-                .Where(d => d.DeviceMACAddress == deviceMACAddress)
-                .SelectMany(d => d.RefreshTokens.Where(t => t.IsActive))
-                .OrderBy(t => t.CreatedAt)
-                .ToListAsync()
-            );
+        {
+            if (string.IsNullOrEmpty(deviceMACAddress))
+                return GenericResult<List<UserRefreshToken>>.Failure(ErrorType.MissingData, "Invalid Device MAC Address!");
+            try
+            {
+                var deviceToken = await _context.AppDevices
+                    .AsNoTracking()
+                    .Include(AD => AD.RefreshTokens)
+                    .FirstOrDefaultAsync(d => d.DeviceMACAddress == deviceMACAddress);
 
+                if (deviceToken == null)
+                    return GenericResult<List<UserRefreshToken>>.Failure(ErrorType.NotFound, "Device not found!");
+
+                var activeTokens = deviceToken.RefreshTokens.Where(t => (!(t.Revoked)&&(t.ExpiresAt >= DateTime.UtcNow)))
+                    .OrderBy(t => t.CreatedAt).ToList();
+
+                if(activeTokens is null)
+                    return GenericResult<List<UserRefreshToken>>.Failure(ErrorType.NotFound, "Device not found!");
+                return GenericResult<List<UserRefreshToken>>.Success(activeTokens);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<List<UserRefreshToken>>.Failure(ErrorType.Conflict, ex.Message);
+            }
+        }
+           
         public async Task<GenericResult<List<UserRefreshToken>>> GetAllTokensOfDeviceAsync(string deviceMACAddress)
             => GenericResult<List<UserRefreshToken>>.Success(
                 await _context.AppDevices

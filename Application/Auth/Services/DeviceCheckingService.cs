@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Cashing.interfaces;
+using Application.Abstractions.Cashing.Models;
 using Application.Abstractions.Messaging.DTOs;
 using Application.Abstractions.Messaging.EmailBodies;
 using Application.Abstractions.Messaging.Interfaces;
@@ -47,14 +48,12 @@ namespace Application.Auth.Services
             _otpDeviceCache = otpDeviceCache;
         }
 
-        public async Task<GenericResult<bool>> SendDeviceCheckingOtpAsync(LoginDTO req, Guid appUserId)
+        public async Task<GenericResult<Guid>> SendDeviceCheckingOtpAsync(LoginDTO req, Guid appUserId)
         {
             if (string.IsNullOrEmpty(req.Email) && string.IsNullOrEmpty(req.Username))
-            {
-                return GenericResult<bool>.Failure(
+                return GenericResult<Guid>.Failure(
                     ErrorType.InvalidData,
                     "Email or Username must be provided to send device checking email.");
-            }
             try
             {
                 var email = req.Email ?? (await _work.AppUser.GetUserInfoAsync(appUserId)).Value.email;
@@ -63,7 +62,7 @@ namespace Application.Auth.Services
                 // hash OTP
                 var (otpHash, otpSalt) = _hashing.Hash(otp.ToString());
                 // create OTP device challenge cache entry
-                var otpDeviceChallenge = Domain.Entities.RedisEntities.OtpDeviceChallengeCache.Create(
+                var otpDeviceChallenge = OtpDeviceChallengeCache.Create(
                     appUserId,
                     Convert.ToBase64String(otpHash),
                     Convert.ToBase64String(otpSalt),
@@ -74,31 +73,26 @@ namespace Application.Auth.Services
                 // save in Redis
                 await _otpDeviceCache.SaveAsync(otpDeviceChallenge);
                 // create Email Body
-                var otpQuestionUrl = _configuration["FronEndInfo:FronEndUrl:OtpQuestionUrl"]!;
-                var otpQuestionComponent = _configuration["FronEndInfo:FronEndComponent:OtpQuestionComponent"]!;
                 var Email = new EmailDTO
                    (
                    email,
                    "islamahmed920.al@gmail.com",
                    "Device Access Authenticaion Check",
-                   OTPEmailBody.OtpCheckingMail(
-                       otpQuestionUrl, email, otp,
-                       otpQuestionComponent, otpDeviceChallenge.Id
-                       )
+                   OTPEmailBody.OtpCheckingMail(email, otp ) 
                    );
                 // send Email
                 await _email.SendEmailAsync(Email);
-                return GenericResult<bool>.Success(true, "Device verification code sent successfully.");
+                return GenericResult<Guid>.Success(otpDeviceChallenge.Id, "Device verification code sent successfully, with the questionId"); 
             }
             catch (Exception ex)
             {
-                return GenericResult<bool>.Failure(
+                return GenericResult<Guid>.Failure(
                     ErrorType.Conflict,
                     $"An error occurred while sending device verification code: {ex.Message}");
             }
         }
 
-        public async Task<GenericResult<AuthResponseDTO>> VerifyOtpAsync(Guid questionId, int otpAnswer)
+        public async Task<GenericResult<AuthResponseDTO>> VerifyOtpAsync(Guid questionId, int otpAnswer ,string deviceMAC)
         {
             if (otpAnswer < 100000 || otpAnswer > 999999)
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.InvalidData,"OTP answer must be a 6-digit number.");     
@@ -109,6 +103,8 @@ namespace Application.Auth.Services
                 var otpChallenge =  await _otpDeviceCache.GetAsync(questionId);
                 if (otpChallenge == null)
                     return GenericResult<AuthResponseDTO>.Failure(ErrorType.NotFound, "OTP challenge not found or has expired, try to login again!");
+                if (otpChallenge.DeviceMACAddress != deviceMAC)
+                    return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "Device has been changed!");
                 var isValid = _hashing.Verify(
                     otpAnswer.ToString(),
                     Convert.FromBase64String(otpChallenge.OtpCodeHash),

@@ -59,7 +59,8 @@ namespace Application.Auth.Services
             _DeviceCheck = deviceCheck;
         }
 
-        private int RTExpriresInDays = 7;
+        private const int RTExpriresInDays = 7;
+        private Guid NewUserRefreshTokenId { get; set; } = Guid.Empty;
 
         private async Task SendActivationEmail(string email) // [Done]
         {
@@ -67,7 +68,7 @@ namespace Application.Auth.Services
             var activationUrl = _configuration["FronEndInfo:FronEndUrl:ActivationUrl"]!;
             var activationComponent = _configuration["FronEndInfo:FronEndComponent:ActivationComponent"]!;
             var shortMessage = "Activate";
-            var emailMessage = "Activate your account by clicking the link below:";
+            var emailMessage = "Activate your account by clicking the link below:"; //
 
             var Email = new EmailDTO
                (
@@ -121,7 +122,7 @@ namespace Application.Auth.Services
             // Generate the Hash and Salt for the refresh token
             var (refreshHash, refreshSalt) = _hashing.Hash(refresh);
             // save the refresh token in the DataBase
-            var refreshTokenEntity = _work.UserRefreshToken.SaveTokenAsync(
+            var refreshTokenEntity = await _work.UserRefreshToken.SaveTokenAsync(
                 appUserId,
                 Convert.ToBase64String(refreshSalt),
                 Convert.ToBase64String(refreshHash),
@@ -130,6 +131,7 @@ namespace Application.Auth.Services
                 );
             if (access == null || refresh == null)
                 return null;
+            NewUserRefreshTokenId = refreshTokenEntity.Value!.Id;
             return new AuthResponseDTO { AccessToken = access, RefreshToken = refresh, ExpiresAtUtc = expires };
         }
 
@@ -150,7 +152,7 @@ namespace Application.Auth.Services
             // Generate the Hash and Salt for the refresh token
             var (refreshHash, refreshSalt) = _hashing.Hash(refresh);
             // save the refresh token in the DataBase
-            var refreshTokenEntity = _work.UserRefreshToken.SaveTokenAsync(
+            var refreshTokenEntity = await _work.UserRefreshToken.SaveTokenAsync(
                 userId,
                 Convert.ToBase64String(refreshSalt),
                 Convert.ToBase64String(refreshHash),
@@ -159,6 +161,7 @@ namespace Application.Auth.Services
                 );
             if (access == null || refresh == null)
                 return null;
+            NewUserRefreshTokenId = refreshTokenEntity.Value!.Id;
             return new AuthResponseDTO { AccessToken = access, RefreshToken = refresh, ExpiresAtUtc = expires };
         }
 
@@ -280,7 +283,7 @@ namespace Application.Auth.Services
             {
                 // 1[] check if the user use the UserName or Email:
                 UserIdentityDTO? findUser = null;
-                if (req.Email == null)
+                if (!String.IsNullOrEmpty(req.Email))
                     findUser = await _users.FindByEmailAsync(req.Email!);
                 else
                     findUser = await _users.FindByNameAsync(req.Username!);
@@ -288,7 +291,7 @@ namespace Application.Auth.Services
                 if (findUser != null)
                 {
                     // 2[] the Account is confirmed
-                    if (!await _users.CheckEmailConfirmedAsync( req.Email ?? req.Username))
+                    if (!await _users.CheckEmailConfirmedAsync(findUser.Email))
                     {
                         await SendActivationEmail(findUser.Email);
                         return GenericResult<AuthResponseDTO>.Failure(ErrorType.InvalidData
@@ -301,13 +304,20 @@ namespace Application.Auth.Services
                         return GenericResult<AuthResponseDTO>.Failure(ErrorType.Validation, "The Password is Wrong");
                     // Get the AppUserId for the user:
                     var appUserId = await _users.GetAppUserIdAsync(findUser.Id);
-                    // 4[] Check if the login done from a known Device "MACAddress" (Optional)-> 
+                    // 4[] Check if the login done from a known Device "MACAddress"
                     if (!(await _work.AppDevice.CheckDeviceAssignedToUserAsync(req.DeviceMACAddress,appUserId)).Value)
                     {
                         // Device is not assigned to this user
                         // Send a Checking Mail to the user by using DeviceCheckingService 
-                        await _DeviceCheck.SendDeviceCheckingOtpAsync(req, appUserId); 
-                        return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "The Used Device is not Authorized!");
+                        var otpQuestionInfo = await _DeviceCheck.SendDeviceCheckingOtpAsync(req, appUserId);
+                        if (otpQuestionInfo.IsSuccess)
+                        {
+                            var otpQuestion = new AuthResponseDTO
+                            {
+                                OtoQuestionId = otpQuestionInfo.Value
+                            };
+                            return GenericResult<AuthResponseDTO>.Success(otpQuestion, "The Used Device is not Authorized, an OTP message has been send to the User");
+                        } 
                     }
                     else
                     {
@@ -356,23 +366,17 @@ namespace Application.Auth.Services
                 if (isValid == false)
                     return GenericResult<AuthResponseDTO>.Failure(ErrorType.Unauthorized, "Invalid Token!");
 
-                // If The Token is Valid
-                // 1- create new tokens
+                // If The Token is Valid 
+                // 1- get User Info
                 var userInfo = await _work.AppUser.GetUserInfoAsync(oldActiveToken.AppUserId);
+                // 2- Issue new Tokens and save them in DB
                 var tokens = await IssueTokensAsync(oldActiveToken.AppUserId, userInfo.Value.email, oldActiveToken.DeviceId);
-                // 2- Hash the new created token
-                var refreshTokenHashData = _hashing.Hash(tokens!.RefreshToken);
                 // 3- Rotate the Refresh Tokens, and create new UserRefreshToken (Rotate method aready create new token).
-                var newTKId = await _work.UserRefreshToken.RotateRT_DBProcessAsync(
-                    oldActiveToken.Id,
-                    oldActiveToken.AppUserId,
-                    Convert.ToBase64String(refreshTokenHashData.Salt),
-                    Convert.ToBase64String(refreshTokenHashData.Hash),
-                    RTExpriresInDays);
-
+                var newTKId = await _work.UserRefreshToken.RotateRT_DBProcessAsync
+                    (oldActiveToken.Id ,oldActiveToken.AppUserId ,NewUserRefreshTokenId);
+    
                 if (newTKId.IsSuccess)
                     return GenericResult<AuthResponseDTO>.Success(tokens, "Refresh Request has been Done!");
-
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict, "Can not create New Tokens!");
             }
             catch (Exception ex)

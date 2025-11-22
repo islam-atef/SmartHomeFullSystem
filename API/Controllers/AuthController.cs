@@ -11,10 +11,14 @@ namespace API.Controllers
     {
         // Login and Logout endpoints :
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginReqDTO req, CancellationToken ct = default) // [Done ready for testing]
+        public async Task<IActionResult> Login([FromBody] LoginReqDTO req, CancellationToken ct = default) // [Done ]
         {
             var deviceMAC = Request.Headers["Device-MAC"].ToString();
-            var deviceIP = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            if (string.IsNullOrEmpty(deviceMAC))
+                return BadRequest("Device-MAC header is missing.");
+            var deviceIP = Request.Headers.ContainsKey("X-Forwarded-For")
+                ? Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim()
+                : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
             var loginRequest = new LoginDTO
             {
                 Email = req.Email,
@@ -40,6 +44,8 @@ namespace API.Controllers
         public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default)// [Done ready for testing]
         {
             var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            if (string.IsNullOrEmpty(deviceMAC))
+                return BadRequest("Device-MAC header is missing.");
             var logout = new LogoutDTO
             {
                 RefreshToken = req.RefreshToken,
@@ -60,10 +66,9 @@ namespace API.Controllers
         }
 
 
-
         // Regiser and Activation endpoints :
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO req, CancellationToken ct = default) // [Done ready for testing]
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO req, CancellationToken ct = default) // [Done]
         {
             var request = new RegisterDTO
             {
@@ -86,10 +91,14 @@ namespace API.Controllers
         }
 
         [HttpPost("activate-account")]
-        public async Task<IActionResult> ActivateAccount([FromBody] AccountActivationRequestDTO accountActivationDTO, CancellationToken ct = default) // [Done ready for testing]
+        public async Task<IActionResult> ActivateAccount([FromBody] AccountActivationRequestDTO accountActivationDTO, CancellationToken ct = default) // [Done]
         {
             var deviceMAC = Request.Headers["Device-MAC"].ToString();
-            var deviceIP = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            if (string.IsNullOrEmpty(deviceMAC))
+                return BadRequest("Device-MAC header is missing.");
+            var deviceIP = Request.Headers.ContainsKey("X-Forwarded-For")
+                ? Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim()
+                : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
             var accountActivation= new AccountActivationDTO
             {
                 UserEmail = accountActivationDTO.UserEmail,
@@ -108,10 +117,9 @@ namespace API.Controllers
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
-            return Ok(result.ErrorMessage);
+            return Ok(result);
 
         }
-
 
 
         // Password Management endpoints :
@@ -148,12 +156,13 @@ namespace API.Controllers
         }
 
 
-
         // Token Management endpoints :
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshTK, CancellationToken ct = default) // [Done ready for testing]
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshTK, CancellationToken ct = default) // [Done]
         {
             var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            if (string.IsNullOrEmpty(deviceMAC))
+                return BadRequest("Device-MAC header is missing.");
             var result = await auth.RefreshAsync(refreshTK, deviceMAC!);
             if (!result.IsSuccess)
             {
@@ -166,8 +175,6 @@ namespace API.Controllers
             }
             return Ok(result.Value);
         }
-
-
 
 
         // Account Deletion endpoint :

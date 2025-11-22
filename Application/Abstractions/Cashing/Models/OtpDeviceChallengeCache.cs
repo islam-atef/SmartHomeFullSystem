@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.RedisEntities
+namespace Application.Abstractions.Cashing.Models
 {
     public class OtpDeviceChallengeCache
     {

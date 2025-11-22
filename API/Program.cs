@@ -53,28 +53,30 @@ builder.Services.AddSingleton<IFileProvider>(
     new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
 );
 // Add services to the container.
+builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+// Enable static files to serve content from wwwroot
+app.UseStaticFiles();
+// 
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-
-// Enable static files to serve content from wwwroot
-app.UseStaticFiles();
-
 
 app.MapControllers();
 

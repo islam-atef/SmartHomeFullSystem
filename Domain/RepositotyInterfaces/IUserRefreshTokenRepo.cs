@@ -16,7 +16,7 @@ namespace Application.RepositotyInterfaces
             Guid deviceId ,
             CancellationToken ct = default);
 
-        Task<GenericResult<string>> RotateRT_DBProcessAsync(Guid oldTokenId, Guid userId, string newSalt, string newHash, int expiredAfter, CancellationToken ct = default);
+        Task<GenericResult<string>> RotateRT_DBProcessAsync(Guid oldTokenId, Guid userId, Guid newTokenID , CancellationToken ct = default);
 
         Task<UserRefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct = default);
 

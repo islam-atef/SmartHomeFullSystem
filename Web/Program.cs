@@ -10,6 +10,7 @@ using Web.Infrastructure.Storage;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 
 // Core/Infrastructure/Auth
 builder.Services.AddScoped<ITokenStore, LocalStorageTokenStore>();

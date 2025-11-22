@@ -10,7 +10,6 @@ namespace Application.Entities.SqlEntities.SecurityEntities
     public class UserRefreshToken : BaseEntity<Guid>
     {
         public Guid AppUserId { get; set; }
-        public AppIdentityUser User { get; set; } = default!;
 
         public string TokenHash { get; set; } = default!;
         public string TokenSalt { get; set; } = default!;

@@ -44,7 +44,7 @@ namespace Infrastructure.Identity
         }
         public async Task<bool> CheckEmailConfirmedAsync(string? user)
         {
-            if (!string.IsNullOrWhiteSpace(user))
+            if (string.IsNullOrWhiteSpace(user))
                 return false;
             try
             {
@@ -112,6 +112,7 @@ namespace Infrastructure.Identity
                 return null!;
             }
         }
+
         public async Task<bool> DeleteAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))

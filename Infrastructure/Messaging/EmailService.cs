@@ -27,7 +27,7 @@ namespace Infrastructure.Messaging
             {
                 try
                 {
-                    await smtp.ConnectAsync(configuration["EmailSetting:StmpHost"],
+                    await smtp.ConnectAsync(configuration["EmailSetting:SmtpHost"],
                         int.Parse(configuration["EmailSetting:Port"]!),
                         true);
                     await smtp.AuthenticateAsync(configuration["EmailSetting:UserName"], configuration["EmailSetting:Password"]);

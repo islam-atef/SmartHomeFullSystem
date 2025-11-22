@@ -9,7 +9,7 @@ namespace Application.Abstractions.Messaging.EmailBodies
 {
     public class OTPEmailBody
     {
-        public static string OtpCheckingMail(string baseUrl, string email, int otp, string component, Guid questionId)
+        public static string OtpCheckingMail( string email, int otp)
         {
             return
             $@"
@@ -48,8 +48,6 @@ namespace Application.Abstractions.Messaging.EmailBodies
                         <p>
                             If you did not request this code, please ignore this email, if you orderd to access your account from a new device, please use the code above to verify your identity within 2 minutes.
                         </p>
-                        <br>
-                        <a class=""button"" href=""{baseUrl}/{component}?email={email}&code={questionId}"">Go To the Website</a>
                     </ body >
                 </ html >
             ";

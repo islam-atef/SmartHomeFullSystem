@@ -9,7 +9,7 @@
                 <NotAuthorized>
                     <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(AuthLayout)">
                         <NotAuthorized>
-							<p role="alert">You are not authorized to access this resource. Please log in.</p>
+							<RedirectToLogin />
                         </NotAuthorized>
                     </AuthorizeRouteView>
 				</NotAuthorized>

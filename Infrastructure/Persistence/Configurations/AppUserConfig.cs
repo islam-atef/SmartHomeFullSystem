@@ -20,7 +20,12 @@ namespace Infrastructure.Persistence.Configurations
                 .WithOne() // no navigation on principal
                 .HasForeignKey<AppUser>(x => x.IdentityUserId)
                 .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(A => A.UserRefreshTokens)
+                .WithOne()
+                .HasForeignKey(RT => RT.AppUserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
             // enforce uniqueness of the FK

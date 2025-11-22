@@ -98,9 +98,8 @@ namespace Infrastructure.Persistence.Repositories
             {
                 var token = UserRefreshToken.Create(userId,TKHash,TKSalt,DateTime.UtcNow.AddDays(expiredAfter), deviceId);
                 await _context.UserRefreshTokens.AddAsync(token, ct);
-                var saved = await _context.SaveChangesAsync(ct) > 0;
-
-                return saved
+                var savedResult = await _context.SaveChangesAsync(ct);
+                return savedResult > 0
                     ? GenericResult<UserRefreshToken>.Success(token, "Refresh token saved.")
                     : GenericResult<UserRefreshToken>.Failure(ErrorType.DatabaseError, "Failed to save refresh token.");
             }
@@ -110,7 +109,7 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<GenericResult<string>> RotateRT_DBProcessAsync(Guid oldTokenId, Guid userId,string newSalt, string newHash,int expiredAfter , CancellationToken ct = default)
+        public async Task<GenericResult<string>> RotateRT_DBProcessAsync(Guid oldTokenId, Guid userId, Guid newTokenID, CancellationToken ct = default)
         {
             // get the old token
             var oldToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(t => t.Id == oldTokenId && t.AppUserId == userId, ct);
@@ -120,26 +119,17 @@ namespace Infrastructure.Persistence.Repositories
             if (oldToken.Revoked || oldToken.ExpiresAt <= DateTime.UtcNow)
                 return GenericResult<string>.Failure(ErrorType.InvalidData, "Old token already invalid.");
 
-            // create the new User Refresh Token not the Refresh Token Itself, 
-            var newToken = UserRefreshToken.Create(userId, newHash, newSalt, DateTime.UtcNow.AddDays(expiredAfter), oldToken.DeviceId);
-
             // attach the two token together
             oldToken.Revoked = true;
             oldToken.RevokedAt = DateTime.UtcNow;
-            oldToken.ReplacedByToken = newToken.Id.ToString();
+            oldToken.ReplacedByToken = newTokenID.ToString();
 
             // save
-            await _context.UserRefreshTokens.AddAsync(newToken, ct);
             var saved = await _context.SaveChangesAsync(ct) > 0;
             if (saved)
-            {
-                var newTokenId = $"{newToken.Id}";
-                return GenericResult<string>.Success(newTokenId, "Refresh token rotated DB process Successeded.");
-            }
+                return GenericResult<string>.Success("Done", "Refresh token rotated DB process Successeded.");
             else
-            {
                 return GenericResult<string>.Failure(ErrorType.Conflict, "Can not save changes!.");
-            }
         } 
     }
 }

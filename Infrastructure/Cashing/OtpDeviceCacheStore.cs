@@ -1,5 +1,5 @@
 ﻿using Application.Abstractions.Cashing.interfaces;
-using Domain.Entities.RedisEntities;
+using Application.Abstractions.Cashing.Models;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
