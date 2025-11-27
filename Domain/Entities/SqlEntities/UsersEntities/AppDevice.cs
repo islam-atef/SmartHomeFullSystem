@@ -16,7 +16,7 @@ namespace Domain.Entities.SqlEntities.UsersEntities
 
         public string DeviceName { get; set; } = default!;
         public string DeviceType { get; set; } = default!;
-        public string DeviceMACAddress { get; init; } = default!;
+        public string DeviceMACAddress { get; set; } = default!;
         public string DeviceIP { get; set; } = default!;
 
         private readonly List<AppUser> _deviceUsers = new();
@@ -35,6 +35,12 @@ namespace Domain.Entities.SqlEntities.UsersEntities
         public void UpdateIP(string deviceIP)
         {
             DeviceIP = deviceIP;
+            UpdateAudit();
+        }
+
+        public void UpdateMAC(string deviceMAC)
+        {
+            DeviceMACAddress = deviceMAC;
             UpdateAudit();
         }
 

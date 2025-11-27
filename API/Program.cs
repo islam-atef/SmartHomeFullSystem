@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Application layer setup
 builder.Services.AddApplicationService();  
+
 // Infra setup (DB, Repos, etc.)
 builder.Services.AddInfrastructureService(builder.Configuration);
 
@@ -48,10 +49,27 @@ builder.Services
             }
         };
     });
+
+// CORS setup
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:7279") // your Blazor app's URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
+
 // register PhysicalFileProvider for serving static files
 builder.Services.AddSingleton<IFileProvider>(
     new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
 );
+
+
 // Add services to the container.
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
@@ -59,25 +77,27 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-
+// Build the app
 var app = builder.Build();
-
+// Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
+// Enable routing
+app.UseRouting();
 // Enable static files to serve content from wwwroot
 app.UseStaticFiles();
-// 
-app.UseRouting();
-
+// Enable CORS
+app.UseCors(MyAllowSpecificOrigins);
+// Enable authentication and authorization
 app.UseAuthentication();
 app.UseAuthorization();
-
+// Swagger in Development
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+// Map controllers
 app.MapControllers();
-
+// launch the application
 app.Run();

@@ -1,4 +1,4 @@
 ﻿namespace Web.Models.AuthModel
 {
-    public record AuthResponseDTO(string AccessToken, string RefreshToken, DateTime ExpiresAtUtc);
+    public record AuthResponseDTO(string AccessToken, string RefreshToken, DateTime ExpiresAtUtc, Guid? OtoQuestionId);
 }

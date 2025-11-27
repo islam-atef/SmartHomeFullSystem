@@ -21,6 +21,7 @@ namespace Domain.RepositotyInterfaces
 
         Task<GenericResult<AppDevice>> UpdateAppDeviceIPAsync(string deviceMACAddress, string deviceIP);
         Task<GenericResult<AppDevice>> UpdateAppDeviceNameAsync(string deviceMACAddress, string name);
+        Task<GenericResult<AppDevice>> UpdateAppDeviceMACAsync(string oldMACAddress, string newMACAddress);
 
         Task<GenericResult<AppDevice>> AssignDeviceToUserAsync(string deviceMACAddress, Guid appUserId);
 

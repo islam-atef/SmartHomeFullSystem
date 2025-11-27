@@ -1,7 +1,10 @@
-﻿namespace Web.Core.Auth
+﻿using Web.Models.AuthModel;
+
+namespace Web.Core.Auth
 {
     public interface IAuthApi
     {
-        Task<AuthTokens?> RefreshAsync(string refreshToken);
+        Task<AuthResponseDTO?> RefreshAsync(string refreshToken);
+        Task<AuthResponseDTO> LoginAsync(LoginRequestDTO login );
     }
 }

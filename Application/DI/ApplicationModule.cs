@@ -18,7 +18,7 @@ namespace Application.DI
             // 1- Auth Service
             services.AddScoped<IAuthService, AuthService>();
             // 2- Device Checking Service
-            services.AddScoped<IDeviceCheckingService, DeviceCheckingService>();
+            services.AddScoped<IDeviceManagementService, DeviceManagementService>();
 
             #endregion
 

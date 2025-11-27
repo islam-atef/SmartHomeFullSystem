@@ -239,6 +239,31 @@ namespace Infrastructure.Persistence.Repositories
 
         }
 
+        public async Task<GenericResult<AppDevice>> UpdateAppDeviceMACAsync(string oldMACAddress, string newMACAddress)
+        {
+            if (string.IsNullOrEmpty(oldMACAddress))
+                return GenericResult<AppDevice>.Failure(ErrorType.MissingData, "Invalid Device MAC Old Address!");
+            if (string.IsNullOrEmpty(newMACAddress))
+                return GenericResult<AppDevice>.Failure(ErrorType.MissingData, "Invalid Device New Address!");
+            try
+            {
+                var device = await _context.AppDevices.FirstOrDefaultAsync(d => d.DeviceMACAddress == oldMACAddress);
+                if (device == null)
+                    return GenericResult<AppDevice>.Failure(ErrorType.NotFound, "Device not found!");
+                device.UpdateMAC(newMACAddress);
+                _context.AppDevices.Update(device);
+                var _r = await _context.SaveChangesAsync();
+                if (_r <= 0)
+                    return GenericResult<AppDevice>.Failure(ErrorType.DatabaseError, "Failed to update Device IP!");
+                return GenericResult<AppDevice>.Success(device);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<AppDevice>.Failure(ErrorType.Conflict, ex.Message);
+            }
+
+        }
+
         public async Task<GenericResult<AppDevice>> UpdateAppDeviceNameAsync(string deviceMACAddress, string name)
         {
             if (string.IsNullOrEmpty(deviceMACAddress))
@@ -263,7 +288,5 @@ namespace Infrastructure.Persistence.Repositories
                 return GenericResult<AppDevice>.Failure(ErrorType.Conflict, ex.Message);
             }
         }
-   
-    
     }
 }

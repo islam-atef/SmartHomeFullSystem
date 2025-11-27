@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Application.Auth.Services
 {
-    public class DeviceCheckingService : IDeviceCheckingService
+    public class DeviceManagementService : IDeviceManagementService
     {
         //private readonly IAuthService _auth;
         private readonly IServiceProvider _serviceProvider; // we do that to break the  circular dependency
@@ -28,13 +28,11 @@ namespace Application.Auth.Services
         private readonly IHashingService _hashing;
         private readonly IOtpDeviceCacheStore _otpDeviceCache;
         private readonly IUnitOfWork _work;
-        private readonly IConfiguration _configuration;
-        public DeviceCheckingService(
+        public DeviceManagementService(
             IEmailService email,
             //IAuthService auth,
             IServiceProvider serviceProvider, // we do that to break the  circular dependency
             IUnitOfWork work,
-            IConfiguration configuration,
             IHashingService hashing,
             IOtpDeviceCacheStore otpDeviceCache
             )
@@ -43,7 +41,6 @@ namespace Application.Auth.Services
             //_auth = auth;
             _serviceProvider = serviceProvider; // we do that to break the  circular dependency
             _work = work;
-            _configuration = configuration;
             _hashing = hashing;
             _otpDeviceCache = otpDeviceCache;
         }
@@ -89,6 +86,23 @@ namespace Application.Auth.Services
                 return GenericResult<Guid>.Failure(
                     ErrorType.Conflict,
                     $"An error occurred while sending device verification code: {ex.Message}");
+            }
+        }
+
+        public async Task<GenericResult<bool>> UpdateDeviceMACAsync(string oldDeviceMAC, string newDeviceMAC)
+        {
+            if (string.IsNullOrEmpty(oldDeviceMAC) || string.IsNullOrEmpty(newDeviceMAC))
+                return GenericResult<bool>.Failure(ErrorType.InvalidData, "Old or new device MAC address is missing.");
+            try
+            {
+                var updateResult = await _work.AppDevice.UpdateAppDeviceMACAsync(oldDeviceMAC, newDeviceMAC);
+                if (!updateResult.IsSuccess)
+                    return GenericResult<bool>.Failure(updateResult.ErrorType, updateResult.ErrorMessage ?? "Failed to update device MAC address.");
+                return GenericResult<bool>.Success(true, "Device MAC address updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(ErrorType.Conflict, $"An error occurred while updating device MAC address: {ex.Message}");
             }
         }
 
@@ -157,5 +171,6 @@ namespace Application.Auth.Services
                 return GenericResult<AuthResponseDTO>.Failure(ErrorType.Conflict,$"An error occurred while verifying OTP: {ex.Message}");    
             }
         }
+    
     }
 }

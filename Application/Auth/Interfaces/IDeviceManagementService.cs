@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace Application.Auth.Interfaces
 {
-    public interface IDeviceCheckingService
+    public interface IDeviceManagementService
     {
         Task<GenericResult<Guid>> SendDeviceCheckingOtpAsync(LoginDTO req, Guid appUserId);
         Task<GenericResult<AuthResponseDTO>> VerifyOtpAsync(Guid questionId, int otpAnswer, string deviceMAC);
+        Task<GenericResult<bool>> UpdateDeviceMACAsync(string oldDeviceMAC, string newDeviceMAC);
     }
 }

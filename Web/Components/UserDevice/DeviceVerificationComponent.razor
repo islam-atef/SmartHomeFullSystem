@@ -1,0 +1,60 @@
+﻿@inject DeviceManagementService deviceManagement
+@inject NavigationManager NavigationManager
+<div>
+	<div class="row g-6">
+		<div class="col-12">
+			<div class="text-center">
+				<h3 class="fw-bold fs-5 mb-2">Sign In</h3>
+				<p class="text-muted">Login to your Account</p>
+			</div>
+		</div>
+	</div>
+	<EditForm Model="Model" OnValidSubmit="Submit">
+		<DataAnnotationsValidator />
+		<div class="form-floating mb-4 bo">
+
+			<label for="otpAnwser" class="form-label">OTP Code</label>
+
+			<InputNumber @bind-Value="Model!.OtpAnswer"
+				class="form-control rounded-2 border-1"
+				id="otpAnwser"
+				placeholder="" />
+			<ValidationMessage For="() => Model!.OtpAnswer" />
+
+			<div id="AnswerInfo" class="form-text">
+				The Otp had been sent to your Email, and you have (2m) before expiration of this OTP.
+			</div>
+
+			<button type="submit" class="btn btn-primary w-100 rounded-2 mb-3">
+				Confirm Anwser
+			</button>
+
+		</div>
+	</EditForm>
+</div>
+
+
+@code {
+	[Parameter]
+	public Guid? OtpQuestionId { get; init; }
+
+	private OtpQuestionAnswerDTO? Model { get; set; }
+	protected override void OnInitialized()
+	{
+		Model = new();
+	}
+
+	private async Task Submit(EditContext args)
+	{
+		Model!.OtpQuestionId = OtpQuestionId;
+		var result = await deviceManagement.VerifyDeviceAsync(Model.OtpQuestionId, Model.OtpAnswer);
+		if (result == true)
+		{
+			NavigationManager.NavigateTo("/");
+		}
+		else
+		{
+			NavigationManager.NavigateTo("/login");
+		}
+	}
+}

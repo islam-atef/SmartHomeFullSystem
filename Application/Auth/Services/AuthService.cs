@@ -35,7 +35,7 @@ namespace Application.Auth.Services
         private readonly IDateTimeProvider _clock;
         private readonly IEmailService _email;
         private readonly IUnitOfWork _work;
-        private readonly IDeviceCheckingService _DeviceCheck;
+        private readonly IDeviceManagementService _DeviceCheck;
 
         public AuthService(
             IIdentityManagement users,
@@ -46,7 +46,7 @@ namespace Application.Auth.Services
             IEmailService email,
             IUnitOfWork work,
             IConfiguration configuration,
-            IDeviceCheckingService deviceCheck)
+            IDeviceManagementService deviceCheck)
         {
             _users = users;
             _customTokens = customTokens;
@@ -308,7 +308,7 @@ namespace Application.Auth.Services
                     if (!(await _work.AppDevice.CheckDeviceAssignedToUserAsync(req.DeviceMACAddress,appUserId)).Value)
                     {
                         // Device is not assigned to this user
-                        // Send a Checking Mail to the user by using DeviceCheckingService 
+                        // Send a Checking Mail to the user by using DeviceManagementService 
                         var otpQuestionInfo = await _DeviceCheck.SendDeviceCheckingOtpAsync(req, appUserId);
                         if (otpQuestionInfo.IsSuccess)
                         {

@@ -13,7 +13,19 @@ namespace Web.Infrastructure.Storage
         public async Task<AuthTokens?> GetAsync()
         {
             var json = await _js.InvokeAsync<string?>("localStorage.getItem", Key);
-            return string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<AuthTokens>(json);
+            if(string.IsNullOrWhiteSpace(json)) 
+                return null;
+            try
+            {
+                // Decode the Token
+                return JsonSerializer.Deserialize<AuthTokens>(json);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"[TokenStore] Invalid token JSON in localStorage. Clearing. Error: {ex.Message}");
+                await ClearAsync();
+                return null;
+            }
         }
 
         public Task SaveAsync(AuthTokens tokens)

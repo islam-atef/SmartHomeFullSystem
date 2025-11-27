@@ -43,21 +43,20 @@ namespace Web.Identity
                 {
                     // re-read in case it changed meanwhile
                     var latest = await _store.GetAsync();
-
+                    // return unauthinticated if the store is empty.
                     if (latest is null) return anon;
-
-                    
+                    // if there is a token in the store:
                     if (latest.ExpiresAtUtc <= _clock.GetUtcNow().UtcDateTime + RefreshSkew)
                     {
                         var refreshed = await _authApi.RefreshAsync(latest.RefreshToken);
-                        if (refreshed is null)
+                        if (refreshed is null || String.IsNullOrEmpty(refreshed.AccessToken) || String.IsNullOrEmpty(refreshed.RefreshToken))
                         {
                             await _store.ClearAsync();
                             NotifyAuthenticationStateChanged(Task.FromResult(anon));
                             return anon;
                         }
-                        await _store.SaveAsync(refreshed);
-                        tokens = refreshed;
+                        tokens = new AuthTokens(refreshed.AccessToken,refreshed.RefreshToken,refreshed.ExpiresAtUtc);
+                        await _store.SaveAsync(tokens);
                     }
                     else
                     {
@@ -73,6 +72,7 @@ namespace Web.Identity
             return state;
         }
 
+        // Mark the user as authenticated and notify the authentication state has changed
         public async Task MarkAuthenticatedAsync(AuthTokens tokens)
         {
             await _store.SaveAsync(tokens);
