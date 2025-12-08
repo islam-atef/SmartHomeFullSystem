@@ -165,30 +165,30 @@ namespace Application.Auth.Services
             return new AuthResponseDTO { AccessToken = access, RefreshToken = refresh, ExpiresAtUtc = expires };
         }
 
-        public async Task<GenericResult<string>> RegisterAsync(RegisterDTO req) // [Done]
+        public async Task<GenericResult<bool>> RegisterAsync(RegisterDTO req) // [Done]
         {
             if (req == null)
-                return GenericResult<string>.Failure(ErrorType.NullableValue, "There Is No Data Have been Sent");
+                return GenericResult<bool>.Failure(ErrorType.NullableValue, "There Is No Data Have been Sent");
             try
             {
                 if (await _users.FindByNameAsync(req.Username) is not null)
-                    return GenericResult<string>.Failure(ErrorType.MissingData, "this UserName can not be used! ");
+                    return GenericResult<bool>.Failure(ErrorType.MissingData, "this UserName can not be used! ");
                 if (await _users.FindByEmailAsync(req.Email) is not null)
-                    return GenericResult<string>.Failure(ErrorType.MissingData, "this Email can not be used! ");
+                    return GenericResult<bool>.Failure(ErrorType.MissingData, "this Email can not be used! ");
 
                 var registrationResult = await _users.CreateAsync(req.Username,req.Email,req.Password,req.DisplayName);  
                 if (registrationResult == null)
                 {
-                    return GenericResult<string>.Failure(ErrorType.Conflict, registrationResult!.Errors);
+                    return GenericResult<bool>.Failure(ErrorType.Conflict, registrationResult!.Errors);
                 }
                 else
                 {
                     // send active Email:
                     await SendActivationEmail(req.Email);
-                    return GenericResult<string>.Success("Done", "Account has Successfully Registered");
+                    return GenericResult<bool>.Success(true, "Account has Successfully Registered");
                 }
             }
-            catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
+            catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
         public async Task<GenericResult<bool>> AccountActivation(AccountActivationDTO accountActivationDTO) // [Done]
@@ -238,41 +238,41 @@ namespace Application.Auth.Services
             catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<string>> SendEmailForForgottenPassword(string email) // [Done]
+        public async Task<GenericResult<bool>> SendEmailForForgottenPassword(string email) // [Done]
         {
             if (email == null)
-                return GenericResult<string>.Failure(ErrorType.NullableValue, "the input parameter is null");
+                return GenericResult<bool>.Failure(ErrorType.NullableValue, "the input parameter is null");
             try
             {
                 var findUser = await _users.FindByEmailAsync(email);
                 if (findUser is null)
-                    return GenericResult<string>.Failure(ErrorType.NotFound, "There is no Account with this Email");
+                    return GenericResult<bool>.Failure(ErrorType.NotFound, "There is no Account with this Email");
 
                 await SendResetPasswordEmail(findUser.Email);
 
-                return GenericResult<string>.Success("Done");
+                return GenericResult<bool>.Success(true);
             }
-            catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
+            catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
-        public async Task<GenericResult<string>> ResetPassword(ResetPasswordDTO rpw) // [work just with foget password]
+        public async Task<GenericResult<bool>> ResetPassword(ResetPasswordDTO rpw) // [Done]
         {
             if (rpw == null)
-                return GenericResult<string>.Failure(ErrorType.NullableValue, "the input parameter is null");
+                return GenericResult<bool>.Failure(ErrorType.NullableValue, "the input parameter is null");
             try
             {
                 var findUser = await _users.FindByEmailAsync(rpw.UserEmail);
                 if (findUser is null)
-                    return GenericResult<string>.Failure(ErrorType.NotFound, "There is no Account with this Email");
+                    return GenericResult<bool>.Failure(ErrorType.NotFound, "There is no Account with this Email");
 
                 var resetPwResult = await _users.ResetPasswordAsync(rpw.UserEmail, rpw.ResetPWToken, rpw.UserPassword);
 
                 if (resetPwResult != null)
-                    return GenericResult<string>.Success("Done", "Password Has Changed");
+                    return GenericResult<bool>.Success(true, "Password Has Changed");
 
-                return GenericResult<string>.Failure(ErrorType.Conflict, resetPwResult);
+                return GenericResult<bool>.Failure(ErrorType.Conflict, resetPwResult);
             }
-            catch (Exception ex) { return GenericResult<string>.Failure(ErrorType.Conflict, ex.Message); }
+            catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
         }
 
         public async Task<GenericResult<AuthResponseDTO>> LoginAsync(LoginDTO req) // [Done]
@@ -314,7 +314,7 @@ namespace Application.Auth.Services
                         {
                             var otpQuestion = new AuthResponseDTO
                             {
-                                OtoQuestionId = otpQuestionInfo.Value
+                                OtpQuestionId = otpQuestionInfo.Value
                             };
                             return GenericResult<AuthResponseDTO>.Success(otpQuestion, "The Used Device is not Authorized, an OTP message has been send to the User");
                         } 
@@ -445,6 +445,34 @@ namespace Application.Auth.Services
             {
                 return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
             }
+        }
+
+        public async Task<GenericResult<bool>> CheckEmailExistanceAsync(string email) //[Done]
+        {
+            if (email == null)
+                return GenericResult<bool>.Failure(ErrorType.NullableValue, "there is no email received");
+            try
+            {
+                if (await _users.CheckUserExistAsync(email, "email"))
+                    return GenericResult<bool>.Success(true);
+                else
+                    return GenericResult<bool>.Success(false);
+            }
+            catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
+        }
+
+        public async Task<GenericResult<bool>> CheckUserNameExistanceAsync(string username) //[Done]
+        {
+            if (username == null)
+                return GenericResult<bool>.Failure(ErrorType.NullableValue, "there is no username received");
+            try
+            {
+               if(await _users.CheckUserExistAsync(username, "username"))
+                    return GenericResult<bool>.Success(true);
+               else
+                    return GenericResult<bool>.Success(false);
+            }
+            catch (Exception ex) { return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message); }
         }
     }
 }

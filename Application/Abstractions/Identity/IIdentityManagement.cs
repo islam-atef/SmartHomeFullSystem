@@ -12,6 +12,7 @@ namespace Application.Abstractions.Identity
     {
         Task<string> GenerateEmailConfirmationTokenAsync(string email);
         Task<string> GeneratePasswordResetTokenAsync(string email);
+        Task<bool> CheckUserExistAsync(string value, string type);
 
         Task<UserIdentityDTO?> FindByEmailAsync(string email);
         Task<UserIdentityDTO?> FindByIdAsync(Guid userId);

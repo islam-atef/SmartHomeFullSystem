@@ -1,7 +1,9 @@
 ﻿using API.ApiDTOs.AuthControllerDTOs.RequestDTOs;
 using Application.Auth.DTOs;
 using Application.Auth.Interfaces;
+using Application.GenericResult;
 using Microsoft.AspNetCore.Mvc;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Controllers
 {
@@ -13,9 +15,9 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginReqDTO req, CancellationToken ct = default) // [Done ]
         {
-            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
-                return BadRequest("Device-MAC header is missing.");
+                return BadRequest("Device-Mac header is missing.");
             var deviceIP = Request.Headers.ContainsKey("X-Forwarded-For")
                 ? Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim()
                 : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
@@ -28,13 +30,14 @@ namespace API.Controllers
                 DeviceIP = deviceIP
             };
             var result = await auth.LoginAsync(loginRequest);
-            if (!result.IsSuccess)
+            if (!result.IsSuccess) 
             {
                 return result.ErrorType switch
                 {
                     Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
                     Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
-                    _ => StatusCode(500, result.ErrorMessage)
+                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
+                    _ => BadRequest(result.ErrorMessage)
                 };
             }
             return Ok(result.Value);
@@ -43,9 +46,9 @@ namespace API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default)// [Done ready for testing]
         {
-            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
-                return BadRequest("Device-MAC header is missing.");
+                return BadRequest("Device-Mac header is missing.");
             var logout = new LogoutDTO
             {
                 RefreshToken = req.RefreshToken,
@@ -59,6 +62,7 @@ namespace API.Controllers
                 {
                     Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
                     Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -68,7 +72,7 @@ namespace API.Controllers
 
         // Regiser and Activation endpoints :
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO req, CancellationToken ct = default) // [Done]
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO req, CancellationToken ct = default) // [Done]  
         {
             var request = new RegisterDTO
             {
@@ -93,9 +97,9 @@ namespace API.Controllers
         [HttpPost("activate-account")]
         public async Task<IActionResult> ActivateAccount([FromBody] AccountActivationRequestDTO accountActivationDTO, CancellationToken ct = default) // [Done]
         {
-            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
-                return BadRequest("Device-MAC header is missing.");
+                return BadRequest("Device-Mac header is missing.");
             var deviceIP = Request.Headers.ContainsKey("X-Forwarded-For")
                 ? Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim()
                 : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
@@ -114,6 +118,7 @@ namespace API.Controllers
                 {
                     Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
                     Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -122,10 +127,12 @@ namespace API.Controllers
         }
 
 
+
         // Password Management endpoints :
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] string email, CancellationToken ct = default)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgetPasswordDTO reqDto, CancellationToken ct = default) // [Done]
         {
+            var email = reqDto.Email;
             var result = await auth.SendEmailForForgottenPassword(email);
             if (!result.IsSuccess)
             {
@@ -156,13 +163,14 @@ namespace API.Controllers
         }
 
 
+
         // Token Management endpoints :
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshTK, CancellationToken ct = default) // [Done]
         {
-            var deviceMAC = Request.Headers["Device-MAC"].ToString();
+            var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
-                return BadRequest("Device-MAC header is missing.");
+                return BadRequest("Device-Mac header is missing.");
             var result = await auth.RefreshAsync(refreshTK, deviceMAC!);
             if (!result.IsSuccess)
             {
@@ -170,11 +178,38 @@ namespace API.Controllers
                 {
                     Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
                     Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
             return Ok(result.Value);
         }
+
+
+
+        // Check Existance endpoints :
+        [HttpGet("check-email")]
+        public async Task<ActionResult<GenericResult<bool>>> CheckEmail([FromQuery] string email) // [Done]
+        {
+            var result = await auth.CheckEmailExistanceAsync(email);
+            if (!result.IsSuccess && result.ErrorType == ErrorType.NullableValue)
+                return BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess && result.ErrorType == ErrorType.Conflict)
+                return StatusCode(StatusCodes.Status409Conflict, result.ErrorMessage); 
+            return Ok(result.Value);
+        }
+  
+        [HttpGet("check-username")]
+        public async Task<ActionResult<GenericResult<bool>>> CheckUsername([FromQuery] string username) // [Done]
+        {
+            var result = await auth.CheckUserNameExistanceAsync(username);
+            if (!result.IsSuccess && result.ErrorType == ErrorType.NullableValue)
+                return BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess && result.ErrorType == ErrorType.Conflict)
+                return StatusCode(StatusCodes.Status409Conflict, result.ErrorMessage);
+            return Ok(result.Value);
+        }
+
 
 
         // Account Deletion endpoint :

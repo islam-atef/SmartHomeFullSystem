@@ -11,6 +11,6 @@ namespace Application.Auth.DTOs
         public string AccessToken { get; init; } = default!;
         public string RefreshToken { get; init; } = default!;
         public DateTime ExpiresAtUtc { get; init; }
-        public Guid? OtoQuestionId { get; set; } = Guid.Empty;
+        public Guid? OtpQuestionId { get; set; } = Guid.Empty;
     }
 }

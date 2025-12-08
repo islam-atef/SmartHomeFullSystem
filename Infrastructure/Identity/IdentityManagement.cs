@@ -56,6 +56,16 @@ namespace Infrastructure.Identity
             }
             catch(Exception) { return false; }
         }
+        public async Task<bool> CheckUserExistAsync(string value, string type)
+        {  if (string.IsNullOrWhiteSpace(value))
+                return false;
+            return type switch
+            {
+                "username" => await _userManager.Users.AnyAsync(u => u.UserName == value),
+                "email" => await _userManager.Users.AnyAsync(u => u.Email == value),
+                _ => false
+            };
+        }
 
         public async Task<bool> ConfirmEmailAsync(string email, string token)
         {
