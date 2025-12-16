@@ -13,6 +13,8 @@ namespace Application.Entities.SqlEntities.RoomEntities
         public Guid ProfileId { get; private set; }
         public virtual Profile Profile { get; private set; }
 
+        public string Name { get; set; }
+
         public Guid RoomId { get; private set; }
         public virtual Room Room { get; private set; }
 

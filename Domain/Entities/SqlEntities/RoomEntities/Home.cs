@@ -21,7 +21,16 @@ namespace Application.Entities.SqlEntities.RoomEntities
         private readonly List<AppUser> _appUsers = new();
         public IReadOnlyCollection<AppUser> AppUsers => _appUsers.AsReadOnly();
 
+        public Guid HomeOwnerId {  get; set; } = default;
+
+        public double Latitude { get; private set; }   
+        public double Longitude { get; private set; }  
+
         public string HomeIP { get; private set; }
+
+
+
+
 
         public void Rename(string newName , string userName)
         {
@@ -31,7 +40,7 @@ namespace Application.Entities.SqlEntities.RoomEntities
             UpdateAudit(userName);
         }
 
-        public static Home Create(string name , string ip)
+        public static Home Create(string name , string ip, double latitude, double longitude, Guid homeOwner)
         {
             var H = new Home
             {
@@ -39,7 +48,15 @@ namespace Application.Entities.SqlEntities.RoomEntities
                 Name = NormalizeName(name),
             };
             H.SetHomeIP(ip);
+            H.SetHomeLocation(latitude, longitude);
+            H.SetHomeOwner(homeOwner);
             return H;
+        }
+
+        public void SetHomeOwner(Guid owner)
+        {
+            HomeOwnerId = owner;
+            ModifiedAt = DateTime.UtcNow;
         }
 
         public void AddUser(AppUser user)
@@ -75,6 +92,15 @@ namespace Application.Entities.SqlEntities.RoomEntities
                 throw new ArgumentException("Invalid IP address format.", nameof(ip));
 
             HomeIP = parsedIp.ToString();
+            ModifiedAt = DateTime.UtcNow;
+        }
+
+        public void SetHomeLocation(double latitude, double longitude)
+        {
+            if (double.IsNaN(latitude) || double.IsNaN(longitude))
+                throw new ArgumentException(nameof(latitude), nameof(longitude));
+            Latitude = latitude;    
+            Longitude = longitude;
             ModifiedAt = DateTime.UtcNow;
         }
 

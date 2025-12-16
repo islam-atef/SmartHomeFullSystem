@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\Security\DTOs\" />
-    <Folder Include="Commons\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,7 @@
 using Application.Entities.SqlEntities.RoomEntities;
 using Application.Entities.SqlEntities.SecurityEntities;
 using Application.Entities.SqlEntities.UsersEntities;
+using Domain.Entities.SqlEntities.CommonEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -25,7 +26,7 @@ namespace Infrastructure.Persistence
 
         public virtual DbSet<AppUser> AppUsers { get; set; }
         public virtual DbSet<AppDevice> AppDevices { get; set; }
-        public virtual DbSet<Profile> ProfileUsers { get; set; }
+        public virtual DbSet<Profile> Profiles { get; set; }
 
         public virtual DbSet<Home> Homes { get; set; }
         public virtual DbSet<Room> Rooms { get; set; }
@@ -35,6 +36,8 @@ namespace Infrastructure.Persistence
         public virtual DbSet<ControlUnit> ControlUnits { get; set; }
 
         public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+
+        public virtual DbSet<HomeSubscriptionRequest> HomeSubscriptionRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -44,7 +44,7 @@ namespace API.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default)// [Done ready for testing]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default) // [Done ready for testing]
         {
             var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
@@ -147,7 +147,7 @@ namespace API.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO rpw, CancellationToken ct = default)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO rpw, CancellationToken ct = default) // [Done]
         {
             var result = await auth.ResetPassword(rpw);
             if (!result.IsSuccess)

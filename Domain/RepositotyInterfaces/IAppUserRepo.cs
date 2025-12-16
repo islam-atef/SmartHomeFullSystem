@@ -12,10 +12,15 @@ namespace Application.RepositotyInterfaces
     public interface IAppUserRepo
     {
         Task<bool> IsUserExistsAsync(Guid id, CancellationToken ct = default);
+
         Task<GenericResult<AppUser>> AddUserAsync(AppUser user, CancellationToken ct = default);
-        Task<GenericResult<AppUser>> UpdateUserAsync(AppUser user, CancellationToken ct = default);
-        Task<GenericResult<string?>> AddOrUpdateUserImageAsync(IFormFileCollection imageFile, AppUser user, CancellationToken ct = default);
-        Task<GenericResult<(string email, string userName)>> GetUserInfoAsync(Guid userId, CancellationToken ct = default);
+
+        Task<GenericResult<(string email, string userName)>> GetUserIdentityInfoAsync(Guid userId, CancellationToken ct = default);
+        Task<GenericResult<(string email, string userName, string displayName, string phone)>> GetUserInfoAsync(Guid userId, CancellationToken ct = default);
+
+        Task<GenericResult<bool>> ChangeUserDisplayNameAsync(Guid userId, string newName, CancellationToken ct = default);
+        Task<GenericResult<bool>> ChangeUserPhoneNumberAsync(Guid userId, string newNumber, CancellationToken ct = default);
+
         Task<GenericResult<bool>> RemoveUserAsync(Guid userId, CancellationToken ct = default);
     }
 }

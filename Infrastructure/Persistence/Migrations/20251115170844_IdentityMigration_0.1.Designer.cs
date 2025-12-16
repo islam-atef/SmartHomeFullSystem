@@ -485,7 +485,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProfileUsers");
+                    b.ToTable("Profiles");
                 });
 
             modelBuilder.Entity("DeviceUsers", b =>

@@ -137,7 +137,7 @@ namespace Application.Auth.Services
 
         public async Task<AuthResponseDTO?> IssueTokensAsync(Guid userId, string email, Guid deviceId) // [Done]
         {
-            var appUser = await _work.AppUser.GetUserInfoAsync(userId);
+            var appUser = await _work.AppUser.GetUserIdentityInfoAsync(userId);
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId.ToString()), // Use AppUserId as NameIdentifier, not IdentityUserId for security.
@@ -368,7 +368,7 @@ namespace Application.Auth.Services
 
                 // If The Token is Valid 
                 // 1- get User Info
-                var userInfo = await _work.AppUser.GetUserInfoAsync(oldActiveToken.AppUserId);
+                var userInfo = await _work.AppUser.GetUserIdentityInfoAsync(oldActiveToken.AppUserId);
                 // 2- Issue new Tokens and save them in DB
                 var tokens = await IssueTokensAsync(oldActiveToken.AppUserId, userInfo.Value.email, oldActiveToken.DeviceId);
                 // 3- Rotate the Refresh Tokens, and create new UserRefreshToken (Rotate method aready create new token).

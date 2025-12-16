@@ -12,8 +12,11 @@ namespace Application.Entities.SqlEntities.UsersEntities
     {
         public required string  ProfileName { get; set; }
 
-        public required Guid UserId { get; set; }
-        public required AppUser User { get; set; }
+        public required Guid UserId { get; init; }
+        public required AppUser User { get; init; }
+
+        public required Guid HomeId { get; init; }
+        public required Home Home { get; init; }
 
         public virtual ICollection<RoomProfile> RoomProfiles { get; set; } = new HashSet<RoomProfile>();
 

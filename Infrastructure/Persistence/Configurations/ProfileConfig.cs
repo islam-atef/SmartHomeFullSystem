@@ -20,6 +20,11 @@ namespace Infrastructure.Persistence.Configurations
                 .WithOne(RP => RP.Profile)
                 .HasForeignKey(RP => RP.ProfileId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(p => p.Home)
+                .WithMany()
+                .HasForeignKey(p => p.HomeId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     } 
 }

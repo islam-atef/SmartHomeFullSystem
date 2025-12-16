@@ -15,14 +15,11 @@ namespace Infrastructure.Persistence.Repositories
     public class AppUserRepo : IAppUserRepo
     {
         private readonly AppDbContext _context;
-        private readonly IImageService _image;
 
-        public AppUserRepo(AppDbContext context, IImageService image)
+        public AppUserRepo(AppDbContext context)
         {
             _context = context;
-            _image = image;
         }
-
 
         public async Task<GenericResult<AppUser>> AddUserAsync(AppUser user, CancellationToken ct = default)    
         {
@@ -48,81 +45,6 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<GenericResult<string?>> AddOrUpdateUserImageAsync(IFormFileCollection imageFiles,AppUser user,CancellationToken ct = default)
-        {
-            // 1) Validate input
-            if (imageFiles is null || imageFiles.Count == 0)
-                return GenericResult<string?>.Failure(ErrorType.InvalidData, "No image provided.");
-            try
-            {
-                // 2) Bring a tracked user (and load IdentityUser if you need UserName)
-                var existingUser = await _context.AppUsers
-                    .Include(u => u.IdentityUser)
-                    .FirstOrDefaultAsync(u => u.Id == user.Id, ct);
-
-                if (existingUser is null)
-                    return GenericResult<string?>.Failure(ErrorType.NotFound, "User not found.");
-
-                var oldImageUrl = existingUser.UserImageUrl;
-
-                // 3) Upload the new image FIRST (avoid losing old if upload fails)
-                var uploaded = await _image.UploadImagesAsync(imageFiles, existingUser.IdentityUser?.UserName ?? existingUser.Id.ToString());
-                if (uploaded is null || uploaded.Count == 0 || string.IsNullOrWhiteSpace(uploaded[0]))
-                    return GenericResult<string?>.Failure(ErrorType.InvalidData, "Upload failed or returned empty URL.");
-
-                var newImageUrl = uploaded[0];
-
-                // 4) Update entity
-                existingUser.UserImageUrl = newImageUrl;
-
-                // 5) Save DB changes
-                var affected = await _context.SaveChangesAsync(ct);
-                if (affected <= 0)
-                {
-                    // Rollback the uploaded file to avoid orphan files
-                    try { _image.DeleteImage(newImageUrl); } catch { /* swallow */ }
-                    return GenericResult<string?>.Failure(ErrorType.DatabaseError, "Failed to update user in database.");
-                }
-
-                // 6) After successful save, delete old file (best-effort)
-                if (!string.IsNullOrWhiteSpace(oldImageUrl))
-                {
-                    try { _image.DeleteImage(oldImageUrl); } catch { /* swallow */ }
-                }
-
-                return GenericResult<string?>.Success(newImageUrl, "Image has been added/updated successfully.");
-            }
-            catch (Exception ex)
-            {
-                return GenericResult<string?>.Failure(ErrorType.Conflict, ex.Message);
-            }
-        }
-
-        public async Task<GenericResult<AppUser>> UpdateUserAsync(AppUser user, CancellationToken ct = default)
-        {
-            if (user == null)
-                return GenericResult<AppUser>.Failure(ErrorType.InvalidData, "User cannot be null");
-            try
-            {
-                if (!await IsUserExistsAsync(user.Id))
-                {
-                    return GenericResult<AppUser>.Failure(ErrorType.Conflict, "No user with the same Id already exists.");
-                }
-
-                _context.AppUsers.Update(user);
-
-                var _savingResult = await _context.SaveChangesAsync(ct);
-                if (_savingResult <= 0)
-                    return GenericResult<AppUser>.Failure(ErrorType.DatabaseError, "Failed to Update the user at database.");
-
-                return GenericResult<AppUser>.Success(user, "User has been Updated successfully!");
-            }
-            catch (Exception ex)
-            {
-                return GenericResult<AppUser>.Failure(ErrorType.DatabaseError, $"An error occurred while Updating the user: {ex.Message}");
-            }
-        }
-
         public async Task<bool> IsUserExistsAsync(Guid id, CancellationToken ct = default)
             => await _context.AppUsers.AnyAsync(u => u.Id == id, ct);
 
@@ -145,7 +67,7 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<GenericResult<(string email, string userName)>> GetUserInfoAsync(Guid userId, CancellationToken ct = default)
+        public async Task<GenericResult<(string email, string userName)>> GetUserIdentityInfoAsync(Guid userId, CancellationToken ct = default)
         {
             if (userId == Guid.Empty)
                 return  GenericResult<(string email, string userName)>.Failure(ErrorType.InvalidData, "UserId cannot be empty");
@@ -166,6 +88,97 @@ namespace Infrastructure.Persistence.Repositories
             catch (Exception ex)
             {
                 return GenericResult<(string email, string userName)>.Failure(ErrorType.DatabaseError, $"An error occurred while retrieving user info: {ex.Message}");
+            }
+        }
+        public async Task<GenericResult<(string email, string userName, string displayName, string phone)>> GetUserInfoAsync(Guid userId, CancellationToken ct = default)
+        {
+            if (userId == Guid.Empty)
+                return GenericResult<(string email, string userName, string displayName, string phone)>.Failure(ErrorType.InvalidData, "UserId cannot be empty");
+            try
+            {
+                var user = await _context.AppUsers
+                    .Include(u => u.IdentityUser)
+                    .FirstOrDefaultAsync(u => u.Id == userId, ct);
+                if (user == null || user.IdentityUser == null || String.IsNullOrEmpty(user.IdentityUser.UserName) || String.IsNullOrEmpty(user.IdentityUser.Email))
+                    return GenericResult<(string email, string userName, string displayName, string phone)>.Failure(ErrorType.NotFound, "User not found.");
+
+                (string _email, string _userName, string displayName, string phone) =
+                    (user.IdentityUser.Email, user.IdentityUser.UserName, user.IdentityUser.DisplayName ?? "Not Exist", user.IdentityUser.PhoneNumber ?? "Not Exist");
+
+                return GenericResult<(string email, string userName, string displayName, string phone)>.Success(
+                    (_email, _userName, displayName, phone),
+                    "User info retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<(string email, string userName, string displayName, string phone)>.Failure(ErrorType.DatabaseError, $"An error occurred while retrieving user info: {ex.Message}");
+            }
+        }
+
+        public async Task<GenericResult<bool>> ChangeUserDisplayNameAsync(Guid userId, string newName, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(newName) || userId == Guid.Empty)
+            {
+                return GenericResult<bool>.Failure(ErrorType.MissingData, "there are missing data!"); 
+            }
+            try
+            {
+                // 1- get the user.
+                var user = await _context.AppUsers
+                    .Include(u => u.IdentityUser)
+                    .FirstOrDefaultAsync(u => u.Id == userId, ct);
+                if (user == null)    
+                { 
+                    return GenericResult<bool>.Failure(ErrorType.NotFound, "there is no user with this ID!");
+                }
+
+                // 2- modifiy user DisplayName
+                user!.IdentityUser.DisplayName = newName.Trim(); 
+
+                // 3- save changes
+                var result = await _context.SaveChangesAsync(ct);
+                if (result <= 0)
+                { 
+                    return GenericResult<bool>.Failure(ErrorType.Conflict, "there is an error while saving changes!"); 
+                }
+                return GenericResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
+            }
+        }
+        public async Task<GenericResult<bool>> ChangeUserPhoneNumberAsync(Guid userId, string newNumber, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(newNumber) || userId == Guid.Empty)
+            {
+                return GenericResult<bool>.Failure(ErrorType.MissingData, "there are missing data!");
+            }
+            try
+            {
+                // 1- get the user.
+                var user = await _context.AppUsers
+                    .Include(u => u.IdentityUser)
+                    .FirstOrDefaultAsync(u => u.Id == userId, ct);
+                if (user == null)
+                {
+                    return GenericResult<bool>.Failure(ErrorType.NotFound, "there is no user with this ID!");
+                }
+
+                // 2- modifiy user PhoneNumber
+                user!.IdentityUser.PhoneNumber = newNumber.Trim();
+
+                // 3- save changes
+                var result = await _context.SaveChangesAsync(ct);
+                if (result <= 0)
+                {
+                    return GenericResult<bool>.Failure(ErrorType.Conflict, "there is an error while saving changes!");
+                }
+                return GenericResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
             }
         }
     }

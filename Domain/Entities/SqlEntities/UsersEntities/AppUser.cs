@@ -14,12 +14,14 @@ namespace Application.Entities.SqlEntities.UsersEntities
 {
     public class AppUser : BaseEntity<Guid>
     {
+        public AppUser() { }
+
         public string? UserImageUrl { get; set; } = null;
 
-        public required Guid IdentityUserId { get; init; }
-        public virtual AppIdentityUser IdentityUser { get; init; } = default!;
+        public Guid IdentityUserId { get; private set; }
+        public virtual AppIdentityUser IdentityUser { get; set; } = default!;
 
-        public virtual ICollection<Profile>? Profiles { get; set; } = new HashSet<Profile>();
+        public virtual ICollection<Profile>? Profiles { get; set; } = new HashSet<Profile>(); // (related to the rooms and homes)
 
         public virtual ICollection<Home>? Homes { get; set; } = new HashSet<Home>();
 

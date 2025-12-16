@@ -1,6 +1,8 @@
 ﻿using Application.Abstractions.Time;
 using Application.Auth.Interfaces;
 using Application.Auth.Services;
+using Application.User_Dashboard.Interfaces;
+using Application.User_Dashboard.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,8 @@ namespace Application.DI
             services.AddScoped<IAuthService, AuthService>();
             // 2- Device Checking Service
             services.AddScoped<IDeviceManagementService, DeviceManagementService>();
-
+            // 3- User information Service
+            services.AddScoped<IUserInfoService, UserInfoService>();
             #endregion
 
             return services;

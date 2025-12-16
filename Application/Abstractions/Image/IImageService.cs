@@ -9,7 +9,7 @@ namespace Application.Abstractions.Image
 {
     public interface IImageService
     {
-        Task<List<string>> UploadImagesAsync(IFormFileCollection files, string src);
+        Task<string?> UploadImagesAsync(IFormFile image, string src);
         void DeleteImage(string src);   
     }
 }

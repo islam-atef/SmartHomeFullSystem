@@ -10,7 +10,7 @@ namespace Application.Entities.SqlEntities.RoomEntities
 {
     public class Room : BaseEntity<Guid>
     {
-        private Room() { }
+        public Room() { }
 
         public string RoomName { get; private set; } = string.Empty;
 
@@ -24,8 +24,13 @@ namespace Application.Entities.SqlEntities.RoomEntities
 
         public bool IsFunctional => RoomControlUnits.Count > 1;
 
-        public required Guid HomeId { get; set; }
-        public required Home Home { get; set; }
+        public Guid HomeId { get; set; }
+        public Home Home { get; set; }
+
+
+
+
+
 
         public void Rename(string newName , string user)
         {
@@ -34,7 +39,7 @@ namespace Application.Entities.SqlEntities.RoomEntities
             UpdateAudit(user);
         }
 
-        public static Room Create(string name, Home home)
+        public static Room Create(string name, Guid homeId)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Room name is required.", nameof(name));
@@ -43,8 +48,7 @@ namespace Application.Entities.SqlEntities.RoomEntities
             {
                 Id = Guid.NewGuid(),
                 RoomName = name.Trim(),
-                HomeId = home.Id,
-                Home = home,
+                HomeId = homeId
             };
         }
 

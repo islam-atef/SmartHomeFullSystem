@@ -255,7 +255,7 @@ namespace Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProfileUsers",
+                name: "Profiles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -331,7 +331,7 @@ namespace Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "FK_RoomProfiles_ProfileUsers_ProfileId",
                         column: x => x.ProfileId,
-                        principalTable: "ProfileUsers",
+                        principalTable: "Profiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -432,7 +432,7 @@ namespace Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProfileUsers_UserId",
-                table: "ProfileUsers",
+                table: "Profiles",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -497,7 +497,7 @@ namespace Infrastructure.Persistence.Migrations
                 name: "RoomProfiles");
 
             migrationBuilder.DropTable(
-                name: "ProfileUsers");
+                name: "Profiles");
 
             migrationBuilder.DropTable(
                 name: "Rooms");

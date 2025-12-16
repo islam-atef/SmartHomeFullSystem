@@ -34,7 +34,7 @@ namespace Infrastructure.Persistence.Configurations
             builder.HasMany(AU => AU.Profiles)
                 .WithOne(P => P.User)
                 .HasForeignKey(P => P.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

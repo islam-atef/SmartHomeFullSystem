@@ -17,6 +17,10 @@ namespace Infrastructure.Persistence.Configurations
             // Apply BaseEntity Cinfigurations.
             base.Configure(builder);
 
+            builder.Property(H => H.Latitude).HasColumnType("float");
+            builder.Property(H => H.Longitude).HasColumnType("float");
+            builder.Property(H => H.HomeOwnerId).IsRequired();
+
             builder.HasMany(H => H.HomeRooms)
                 .WithOne(R => R.Home)
                 .HasForeignKey(R => R.HomeId)

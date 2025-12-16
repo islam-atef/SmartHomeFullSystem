@@ -53,7 +53,7 @@ namespace Application.Auth.Services
                     "Email or Username must be provided to send device checking email.");
             try
             {
-                var email = req.Email ?? (await _work.AppUser.GetUserInfoAsync(appUserId)).Value.email;
+                var email = req.Email ?? (await _work.AppUser.GetUserIdentityInfoAsync(appUserId)).Value.email;
                 // generate OTP
                 var otp = new Random().Next(100000, 999999);
                 // hash OTP

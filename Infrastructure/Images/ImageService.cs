@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Images
 {
-    internal class ImageService(IFileProvider fileProvider) : IImageService
+    internal class ImageService(IFileProvider fileProvider,ILogger<ImageService> logger) : IImageService
     {
         public void DeleteImage(string src)
         {
@@ -40,43 +41,34 @@ namespace Infrastructure.Images
             }
         }
 
-        public async Task<List<string>> UploadImagesAsync(IFormFileCollection files, string src)
+        public async Task<string?> UploadImagesAsync(IFormFile image, string src)
         {
             try
             {
                 // Initialize a list to hold the saved image paths
-                var SaveImagesSrc = new List<string>();
+                string SaveImagesSrc = null!;
                 // Define the directory path where images will be saved
                 var ImagesDirectory = Path.Combine("wwwroot", "Images", src);
                 // Ensure the directory exists
                 if (!Directory.Exists(ImagesDirectory))
                     // Create the directory if it doesn't exist
                     Directory.CreateDirectory(ImagesDirectory);
-                // Iterate through each file in the collection
-                foreach (var image in files)
+                if (image.Length > 0)
                 {
-                    if (image.Length > 0)
+                    // Generate a unique ImageName using a GUID
+                    var ImageName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+                    // save the source path for the image
+                    var ImageSrc = $"/Images/{src}/{ImageName}";
+                    // Combine the directory path and the image name to get the full path   
+                    var ImagePath = Path.Combine(ImagesDirectory, ImageName);
+                    // Open a file stream to write the image to the specified path
+                    using (var stream = new FileStream(ImagePath, FileMode.Create))
                     {
-                        // Generate a unique ImageName using a GUID
-                        /*
-                         *	Guid.NewGuid()
-                         *   •	Generates a new, unique identifier (a GUID).
-                         *   •	This helps ensure that each image file gets a unique name, avoiding filename collisions.
-                         */
-                        var ImageName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
-                        // save the source path for the image
-                        var ImageSrc = $"/Images/{src}/{ImageName}";
-                        // Combine the directory path and the image name to get the full path   
-                        var ImagePath = Path.Combine(ImagesDirectory, ImageName);
-                        // Open a file stream to write the image to the specified path
-                        using (var stream = new FileStream(ImagePath, FileMode.Create))
-                        {
-                            // Copy the image file to the stream
-                            await image.CopyToAsync(stream);
-                        }
-                        // Add the image source path to the list
-                        SaveImagesSrc.Add(ImageSrc);
+                        // Copy the image file to the stream
+                        await image.CopyToAsync(stream);
                     }
+                    // save the image source path
+                    SaveImagesSrc = ImageSrc;
                 }
                 // Return the list of saved image paths
                 return SaveImagesSrc;
@@ -84,11 +76,13 @@ namespace Infrastructure.Images
             catch (Exception ex)
             {
                 // Handle any exceptions that occur during the upload process
-                throw new Exception("An error occurred while uploading images.", ex);
+                logger.LogCritical("ImageService :UploadImagesAsync: {error}", ex.Message);
+                return "error";
             }
             finally
             {
                 // Optionally, you can perform any cleanup or logging here
+                logger.LogTrace("ImageService :UploadImagesAsync: image has been uploaded successfully");
             }
         }
     }
