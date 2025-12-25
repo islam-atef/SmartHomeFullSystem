@@ -184,7 +184,7 @@ namespace Infrastructure.Persistence.Repositories
         {
             if (homeId == Guid.Empty || userId == Guid.Empty)
             {
-                logger.LogWarning("HomeRepo: RemoveHomeRoomAsync: data Missing!, homeId: {x}, user {y}", homeId, user);
+                logger.LogWarning("HomeRepo: RemoveHomeRoomAsync: data Missing!, homeId: {x}, user {y}", homeId, userId);
                 return false;
             }
             try

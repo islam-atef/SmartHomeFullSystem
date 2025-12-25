@@ -23,23 +23,23 @@ namespace Infrastructure.Persistence
         public IAppDeviceRepo AppDevice { get; }
         public IDeviceSessionRepo DeviceSession { get; }
         public IAppUserManagementRepo AppUserManagement { get; }
-        public IHomeRepo Home {  get; }
+        public IHomeRepo Home { get; }
         public IHomeSubscriptionRqRepo HomeSubscription { get; }
-        public IRoomRepo Room {  get; }
+        public IRoomRepo Room { get; }
 
-        public EfUnitOfWork(AppDbContext context, ILogger logger)
+        public EfUnitOfWork(AppDbContext context, ILoggerFactory loggerFactory)
         {
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<EfUnitOfWork>();
 
             AppUser = new AppUserRepo(_context);
             UserRefreshToken = new UserRefreshTokenRepo(_context);
             AppDevice = new AppDeviceRepo(_context);
             DeviceSession = new DeviceSessionRepo(_context);
-            AppUserManagement = new AppUserManagementRepo(_context, _logger);
-            Home = new HomeRepo(_context, _logger);
-            Room = new RoomRepo(_context, _logger);
-            HomeSubscription = new HomeSubscriptionRqRepo(_context, _logger);
+            AppUserManagement = new AppUserManagementRepo(_context, loggerFactory.CreateLogger<AppUserManagementRepo>());
+            Home = new HomeRepo(_context, loggerFactory.CreateLogger<HomeRepo>());
+            Room = new RoomRepo(_context, loggerFactory.CreateLogger<RoomRepo>());
+            HomeSubscription = new HomeSubscriptionRqRepo(_context, loggerFactory.CreateLogger<HomeSubscriptionRqRepo>());
         }
     }
 }

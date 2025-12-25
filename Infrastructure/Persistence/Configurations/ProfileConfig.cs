@@ -19,12 +19,12 @@ namespace Infrastructure.Persistence.Configurations
             builder.HasMany(P => P.RoomProfiles)
                 .WithOne(RP => RP.Profile)
                 .HasForeignKey(RP => RP.ProfileId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(p => p.Home)
                 .WithMany()
                 .HasForeignKey(p => p.HomeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
     } 
 }

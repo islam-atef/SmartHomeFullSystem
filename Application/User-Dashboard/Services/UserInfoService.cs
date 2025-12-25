@@ -37,7 +37,7 @@ namespace Application.User_Dashboard.Services
             _work = work;
             _logger = logger;
         }
-        private string missingImageUrl = "";
+        private readonly string missingImageUrl = "/General/AnonymousUserImage.png";
 
         public async Task<GenericResult<UserGeneralInfoDTO>> GetUserInfoAsync(Guid userId)
         {
@@ -59,7 +59,8 @@ namespace Application.User_Dashboard.Services
                     UserData.Value.email,
                     UserData.Value.userName,
                     UserData.Value.phone,
-                    imgUrl ?? missingImageUrl);
+                    string.IsNullOrEmpty(imgUrl) ? missingImageUrl : imgUrl
+                    );
 
                 return GenericResult<UserGeneralInfoDTO>.Success(returnedData);
 
@@ -172,12 +173,16 @@ namespace Application.User_Dashboard.Services
             {
                 var homes = await _work.AppUserManagement.GetUserHomesAsync(userId);
                 List<UserHomesDTO> homesDTOs = new List<UserHomesDTO>();
+                if (homes == null || homes.Count == 0)
+                {
+                    return GenericResult<IReadOnlyList<UserHomesDTO>>.Success(homesDTOs);
+                }
                 foreach (var home in homes!)
                 {
                     var homeDTO = new UserHomesDTO();
                     homeDTO.HomeId = home.Id;
                     homeDTO.HomeName = home.Name;
-                    homeDTO.Longitud = home.Longitude;
+                    homeDTO.Longitude = home.Longitude;
                     homeDTO.Latitude = home.Latitude;
                     homesDTOs.Add(homeDTO);
                 }
@@ -252,6 +257,7 @@ namespace Application.User_Dashboard.Services
                     var homeName = await _work.Home.GetHomeNameAsync(request.HomeId);
                     requestDTO.HomeName = homeName;
                     requestDTO.RequestDate = request.CreatedAt;
+                    requestDTO.RequestState = request.RequestState;
                     requestDTOs.Add(requestDTO);
                 }
                 return GenericResult<IReadOnlyList<UserSubscriptionRequestDTO>>.Success(requestDTOs);
@@ -281,6 +287,7 @@ namespace Application.User_Dashboard.Services
                     var homeName = await _work.Home.GetHomeNameAsync(request.HomeId);
                     requestDTO.HomeName = homeName;
                     requestDTO.RequestDate = request.CreatedAt;
+                    requestDTO.RequestState = request.RequestState;
                     requestDTOs.Add(requestDTO);
                 }
                 return GenericResult<IReadOnlyList<UserSubscriptionRequestDTO>>.Success(requestDTOs);

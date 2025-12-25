@@ -148,7 +148,7 @@ namespace Infrastructure.Persistence.Repositories
                 var savingResult = await _context.SaveChangesAsync();
                 if (savingResult <= 0)
                 {
-                    _logger.LogError("AppUserManagementRepo: RemoveHomeFromUserAsync: Error while saving data in DB. savechanges returned value: {affected}", affected);
+                    _logger.LogError("AppUserManagementRepo: RemoveHomeFromUserAsync: Error while saving data in DB. savechanges returned value: {savingResult}", savingResult);
                     return false;
                 }
                 return true;

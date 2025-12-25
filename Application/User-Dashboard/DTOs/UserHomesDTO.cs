@@ -10,7 +10,7 @@ namespace Application.User_Dashboard.DTOs
     {
         public Guid HomeId { get; set; }
         public string HomeName { get; set; } = string.Empty;
-        public double Longitud { get; set; }
+        public double Longitude { get; set; }
         public double Latitude { get; set; }
     }
 }
