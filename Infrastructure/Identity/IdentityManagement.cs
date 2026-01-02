@@ -24,7 +24,6 @@ namespace Infrastructure.Identity
             _context = context;
         }
 
-        
         public async Task<bool> CheckPasswordSignInAsync(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))

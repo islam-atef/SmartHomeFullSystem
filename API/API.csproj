@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Folder Include="ApiDTOs\AuthControllerDTOs\ResponseDTOs\" />
+    <Folder Include="ApiDTOs\UserInfoControllerDTOs\ResponseDTOs\" />
     <Folder Include="Hubs\" />
     <Folder Include="wwwroot\General\" />
   </ItemGroup>

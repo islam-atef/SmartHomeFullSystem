@@ -181,5 +181,39 @@ namespace Infrastructure.Persistence.Repositories
                 return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
             }
         }
+
+        public async Task<GenericResult<bool>> ChangeUserNameAsync(Guid userId, string newUserName, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(newUserName) || userId == Guid.Empty)
+            {
+                return GenericResult<bool>.Failure(ErrorType.MissingData, "there are missing data!");
+            }
+            try
+            {
+                // 1- get the user.
+                var user = await _context.AppUsers
+                    .Include(u => u.IdentityUser)
+                    .FirstOrDefaultAsync(u => u.Id == userId, ct);
+                if (user == null)
+                {
+                    return GenericResult<bool>.Failure(ErrorType.NotFound, "there is no user with this ID!");
+                }
+
+                // 2- modifiy user UserName
+                user!.IdentityUser.UserName = newUserName.Trim();
+
+                // 3- save changes
+                var result = await _context.SaveChangesAsync(ct);
+                if (result <= 0)
+                {
+                    return GenericResult<bool>.Failure(ErrorType.Conflict, "there is an error while saving changes!");
+                }
+                return GenericResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
+            }
+        }
     }
 }

@@ -44,7 +44,7 @@ namespace API.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default) // [Done ready for testing]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO req, CancellationToken ct = default) // [Done]
         {
             var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
@@ -66,7 +66,7 @@ namespace API.Controllers
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
-            return Ok(result.ErrorMessage);
+            return Ok(result.Value);
         }
 
 
@@ -166,12 +166,12 @@ namespace API.Controllers
 
         // Token Management endpoints :
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshTK, CancellationToken ct = default) // [Done]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDTO refreshDto, CancellationToken ct = default) // [Done]
         {
             var deviceMAC = Request.Headers["Device-Mac"].ToString();
             if (string.IsNullOrEmpty(deviceMAC))
                 return BadRequest("Device-Mac header is missing.");
-            var result = await auth.RefreshAsync(refreshTK, deviceMAC!);
+            var result = await auth.RefreshAsync(refreshDto.refreshTK, deviceMAC!);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch
@@ -214,9 +214,9 @@ namespace API.Controllers
 
         // Account Deletion endpoint :
         [HttpDelete("delete-account")]
-        public async Task<IActionResult> DeleteAccount([FromBody] string email, CancellationToken ct = default)
+        public async Task<IActionResult> DeleteAccount([FromBody] DeleteRequestDTO emailDto, CancellationToken ct = default)
         {
-            var result = await auth.DeleteAccount(email);
+            var result = await auth.DeleteAccount(emailDto.email);
             if (!result.IsSuccess)
             {
                 return result.ErrorType switch

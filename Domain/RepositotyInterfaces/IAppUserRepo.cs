@@ -20,6 +20,7 @@ namespace Application.RepositotyInterfaces
 
         Task<GenericResult<bool>> ChangeUserDisplayNameAsync(Guid userId, string newName, CancellationToken ct = default);
         Task<GenericResult<bool>> ChangeUserPhoneNumberAsync(Guid userId, string newNumber, CancellationToken ct = default);
+        Task<GenericResult<bool>> ChangeUserNameAsync(Guid userId, string newUserName, CancellationToken ct = default);
 
         Task<GenericResult<bool>> RemoveUserAsync(Guid userId, CancellationToken ct = default);
     }

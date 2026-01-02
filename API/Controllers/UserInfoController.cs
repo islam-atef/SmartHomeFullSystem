@@ -1,4 +1,6 @@
-﻿using Application.User_Dashboard.Interfaces;
+﻿using API.ApiDTOs.HomeMangementDTOs.RequestDTOs;
+using API.ApiDTOs.UserInfoControllerDTOs.RequestDTOs;
+using Application.User_Dashboard.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +26,7 @@ namespace API.Controllers
 
             var result = await infoService.GetUserInfoAsync(userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
@@ -42,7 +44,7 @@ namespace API.Controllers
 
             var result = await infoService.GetUserHomesAsync(userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
@@ -60,7 +62,7 @@ namespace API.Controllers
 
             var result = await infoService.GetUserAllHomeSubscriptionRequsetsAsync(userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
@@ -78,7 +80,7 @@ namespace API.Controllers
 
             var result = await infoService.GetUserNewHomeSubscriptionRequsetsAsync(userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
@@ -86,7 +88,7 @@ namespace API.Controllers
 
 
         [HttpPatch("Update-PhoneNumber")]
-        public async Task<IActionResult> UpdatePhoneNumeber([FromBody] string phoneNumber)
+        public async Task<IActionResult> UpdatePhoneNumeber([FromBody] UpdatePhoneNumDTO phoneNumberDto) //[Done]
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -96,15 +98,33 @@ namespace API.Controllers
             if (!Guid.TryParse(userIdClaim.Value, out var userId))
                 return Unauthorized("Invalid UserId claim");
 
-            var result = await infoService.ChangeUserPhoneNumberAsync(phoneNumber, userId);
+            var result = await infoService.ChangeUserPhoneNumberAsync(phoneNumberDto.PhoneNumber, userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
+            else
+                return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
+        }
+
+        [HttpPatch("Update-UserName")]
+        public async Task<IActionResult> UpdateUserName([FromBody] UpdateUserNameDTO userNameDto) //[Done]
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized("UserId claim not found");
+
+            if (!Guid.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized("Invalid UserId claim");
+
+            var result = await infoService.ChangeUserNameAsync(userNameDto.UserName, userId);
+            if (result.IsSuccess)
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
 
         [HttpPatch("Update-DisplayName")]
-        public async Task<IActionResult> UpdateDiplayName([FromBody] string diplayName)
+        public async Task<IActionResult> UpdateDiplayName([FromBody] UpdateDisplayNameDTO diplayNameDto) //[Done]
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -114,15 +134,16 @@ namespace API.Controllers
             if (!Guid.TryParse(userIdClaim.Value, out var userId))
                 return Unauthorized("Invalid UserId claim");
 
-            var result = await infoService.ChangeUserDisplayNameAsync(diplayName, userId);
+            var result = await infoService.ChangeUserDisplayNameAsync(diplayNameDto.DisplayName, userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
 
         [HttpPatch("Update-UserImage")]
-        public async Task<IActionResult> UpdateImage([FromBody] IFormFile image)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateImage([FromForm] UpdateImageDTO imageDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -132,9 +153,12 @@ namespace API.Controllers
             if (!Guid.TryParse(userIdClaim.Value, out var userId))
                 return Unauthorized("Invalid UserId claim");
 
-            var result = await infoService.ChangeUserImageAsync(image, userId);
+            if (imageDto.Image == null || imageDto.Image.Length == 0)
+                return BadRequest("Image is required");
+
+            var result = await infoService.ChangeUserImageAsync(imageDto.Image, userId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
@@ -142,7 +166,7 @@ namespace API.Controllers
 
 
         [HttpPost("Subscribe-ToHome")]
-        public async Task<IActionResult> SubscripeToHome([FromBody] string homeId)
+        public async Task<IActionResult> SubscripeToHome([FromBody] SubscribeToHomeDTO homeDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -151,13 +175,13 @@ namespace API.Controllers
             if (!Guid.TryParse(userIdClaim.Value, out var userId))
                 return Unauthorized("Invalid UserId claim");
 
-            if (string.IsNullOrEmpty(homeId))
-                return BadRequest($" No Id provided: {homeId}");
-            Guid.TryParse(homeId, out var guidHomeId);
+            if (string.IsNullOrEmpty(homeDto.homeId))
+                return BadRequest($" No Id provided: {homeDto.homeId}");
+            Guid.TryParse(homeDto.homeId, out var guidHomeId);
 
             var result = await infoService.SendHomesubscriptionRequestAsync(userId,guidHomeId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }
@@ -173,7 +197,7 @@ namespace API.Controllers
 
             var result = await infoService.DeleteHomesubscriptionRequestAsync(guidRequestId);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }

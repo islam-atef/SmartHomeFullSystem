@@ -26,18 +26,25 @@ namespace Application.User_Dashboard.Services
     {
         private readonly IImageService _imageService;
         private readonly IUnitOfWork _work;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<UserInfoService> _logger;
-
+        private readonly IIdentityManagement _users;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public UserInfoService(
             IImageService imageService,
             IUnitOfWork work,
-            ILogger<UserInfoService> logger)
+            IConfiguration configuration,
+            ILogger<UserInfoService> logger,
+            IIdentityManagement users,
+            IHttpContextAccessor httpContextAccessor)
         {
             _imageService = imageService;
             _work = work;
+            _configuration = configuration;
             _logger = logger;
+            _users = users;
+            _httpContextAccessor = httpContextAccessor;
         }
-        private readonly string missingImageUrl = "/General/AnonymousUserImage.png";
 
         public async Task<GenericResult<UserGeneralInfoDTO>> GetUserInfoAsync(Guid userId)
         {
@@ -52,14 +59,19 @@ namespace Application.User_Dashboard.Services
                 var UserData = await _work.AppUser.GetUserInfoAsync(userId);
 
                 // 2- get the user image Url
+                var request = _httpContextAccessor.HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
                 var imgUrl = await _work.AppUserManagement.GetUserImageUrlAsync(userId);
+                var fullImageUrl = string.IsNullOrEmpty(imgUrl)
+                        ? $"{baseUrl}/General/AnonymousUserImage.png"
+                        : $"{baseUrl}{imgUrl}";
 
                 var returnedData = new UserGeneralInfoDTO(
                     UserData.Value.displayName,
                     UserData.Value.email,
                     UserData.Value.userName,
                     UserData.Value.phone,
-                    string.IsNullOrEmpty(imgUrl) ? missingImageUrl : imgUrl
+                    fullImageUrl
                     );
 
                 return GenericResult<UserGeneralInfoDTO>.Success(returnedData);
@@ -88,6 +100,35 @@ namespace Application.User_Dashboard.Services
                     return GenericResult<bool>.Failure(ErrorType.Conflict, result.ErrorMessage);
                 }
                 return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("UserInfoService: GetUserInfoAsync: {error}", ex.Message);
+                return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
+            }
+        }
+        public async Task<GenericResult<bool>> ChangeUserNameAsync(string newUserName, Guid userId)
+        {
+            if (userId == Guid.Empty || String.IsNullOrEmpty(newUserName))
+            {
+                _logger.LogWarning("UserInfoService: ChangeUserDisplayNameAsync: there ate missing data : {user}, {userName}.", userId, newUserName);
+                return GenericResult<bool>.Failure(ErrorType.MissingData, "there ate missing data");
+            }
+            try
+            {   // check if this name is exist in the database
+                var res = await _users.CheckUserExistAsync(newUserName, "username");
+                if (!res)
+                {
+                    var result = await _work.AppUser.ChangeUserNameAsync(userId, newUserName);
+                    if (!result.IsSuccess)
+                    {
+                        _logger.LogCritical("UserInfoService: GetUserInfoAsync: {error}", result.ErrorMessage);
+                        return GenericResult<bool>.Failure(ErrorType.Conflict, result.ErrorMessage);
+                    }
+                    return result;
+                }
+                else
+                    return GenericResult<bool>.Failure(ErrorType.Validation, "there is a user with this name"); 
             }
             catch (Exception ex)
             {

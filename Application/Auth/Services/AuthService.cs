@@ -10,18 +10,19 @@ using Application.Auth.Interfaces;
 using Application.Entities.SqlEntities.UsersEntities;
 using Application.GenericResult;
 using Application.RepositotyInterfaces;
-using System.Security.Claims;
+using Application.RuleServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Application.RuleServices;
-using Microsoft.Extensions.Configuration;
 
 namespace Application.Auth.Services
 {
@@ -32,7 +33,6 @@ namespace Application.Auth.Services
         private readonly IJwtTokenService _jwtTokens;
         private readonly IHashingService _hashing;
         private readonly IIdentityManagement _users;
-        private readonly IDateTimeProvider _clock;
         private readonly IEmailService _email;
         private readonly IUnitOfWork _work;
         private readonly IDeviceManagementService _DeviceCheck;
@@ -42,7 +42,6 @@ namespace Application.Auth.Services
             ICustomTokenService customTokens,
             IHashingService hashing,
             IJwtTokenService jwtTokens,
-            IDateTimeProvider clock,
             IEmailService email,
             IUnitOfWork work,
             IConfiguration configuration,
@@ -52,7 +51,6 @@ namespace Application.Auth.Services
             _customTokens = customTokens;
             _jwtTokens = jwtTokens;
             _hashing = hashing;
-            _clock = clock;
             _email = email;
             _work = work;
             _configuration = configuration;
@@ -328,6 +326,11 @@ namespace Application.Auth.Services
                         }
                         // Get the DeviceId
                         var deviceIdResult = await _work.AppDevice.GetDeviceIdByMACAddressAsync(req.DeviceMACAddress);
+                        //Get the Device Active Tokens by MAC Address
+                        var deviceTokensResult = await _work.DeviceSession.GetAllActiveTokensOfDeviceAsync(req.DeviceMACAddress);
+                        // Revoke any Token attached with this device,
+                        foreach (var token in deviceTokensResult.Value!)
+                            await _work.UserRefreshToken.RevokeTokenAsync(token.Id);
                         // Finally[] Get the Tokens:
                         var returnValue = await IssueTokensAsync(findUser!, deviceIdResult.Value);
                         // check if the Token Generation is successfull:

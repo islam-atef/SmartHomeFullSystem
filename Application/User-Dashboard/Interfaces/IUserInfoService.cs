@@ -16,6 +16,7 @@ namespace Application.User_Dashboard.Interfaces
         Task<GenericResult<UserGeneralInfoDTO>> GetUserInfoAsync(Guid userId); // [Done]
 
         Task<GenericResult<bool>> ChangeUserPhoneNumberAsync(string phoneNumber, Guid userId); // [Done]
+        Task<GenericResult<bool>> ChangeUserNameAsync(string newUserName, Guid userId);
         Task<GenericResult<string?>> ChangeUserImageAsync(IFormFile image, Guid userId); // [Done]
         Task<GenericResult<bool>> ChangeUserDisplayNameAsync(string newDisplayName, Guid userId); // [Done]
 
