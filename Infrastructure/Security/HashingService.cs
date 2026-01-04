@@ -1,4 +1,4 @@
-﻿using Application.RuleServices;
+﻿using Application.Abstractions.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,4 @@
-﻿using Application.Abstractions.Security.Interfaces;
+﻿using Application.Abstractions.Security;
 using Infrastructure.Security.ConfigurationOptions;
 using Microsoft.Extensions.Options;
 using System;

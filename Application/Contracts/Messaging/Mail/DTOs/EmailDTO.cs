@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Abstractions.Messaging.DTOs
+namespace Application.Contracts.Messaging.Mail.DTOs
 {
     public class EmailDTO
     {

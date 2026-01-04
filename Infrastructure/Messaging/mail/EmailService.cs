@@ -1,5 +1,5 @@
-﻿using Application.Abstractions.Messaging.DTOs;
-using Application.Abstractions.Messaging.Interfaces;
+﻿using Application.Abstractions.Messaging.mail;
+using Application.Contracts.Messaging.Mail.DTOs;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Messaging
+namespace Infrastructure.Messaging.mail
 {
     public class EmailService(IConfiguration configuration) : IEmailService
     {

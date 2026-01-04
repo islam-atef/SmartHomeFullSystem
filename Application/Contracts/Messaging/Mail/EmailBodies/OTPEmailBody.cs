@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Abstractions.Messaging.EmailBodies
+namespace Application.Contracts.Messaging.Mail.EmailBodies
 {
-    public class RedirectionEmailBody
+    public class OTPEmailBody
     {
-        public static string RedirectionMail(string baseUrl ,string email, string emailMessage, string token, string component, string shortMessage)
+        public static string OtpCheckingMail( string email, int otp)
         {
-            string encodeToken;
-            if (!string.IsNullOrEmpty(token))
-                encodeToken = Uri.EscapeDataString(token);
-            else
-                encodeToken = String.Empty;
             return
             $@"
                 <html>
@@ -39,10 +35,19 @@ namespace Application.Abstractions.Messaging.EmailBodies
                         </style>
                     </head>
                     <body>
-                        <h1>{emailMessage}</h1>
-                        <hr>
-                        <br>
-                        <a class=""button"" href=""{baseUrl}/{component}?email={email}&code={encodeToken}"">{shortMessage}</a>
+                        <h1>The Device Check OTP :</h1>
+                        <h2 style=""
+                            display: flex;
+                            justify-content: center; /* horizontal */
+                            align-items: center;     /* vertical */
+                            height: 100vh;           /* full height example */
+                        "">
+                        { otp}
+                        </h2>
+                        < hr>
+                        <p>
+                            If you did not request this code, please ignore this email, if you orderd to access your account from a new device, please use the code above to verify your identity within 2 minutes.
+                        </p>
                     </ body >
                 </ html >
             ";

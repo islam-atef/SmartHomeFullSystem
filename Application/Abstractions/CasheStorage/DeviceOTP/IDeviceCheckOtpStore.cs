@@ -1,11 +1,11 @@
-﻿using Application.Abstractions.Cashing.Models;
+﻿using Application.Contracts.DeviceChecking.OtpChallenge;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Abstractions.Cashing.interfaces
+namespace Application.Abstractions.CasheStorage.DeviceOTP
 {
     public interface IOtpDeviceCacheStore
     {

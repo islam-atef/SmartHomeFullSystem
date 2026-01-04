@@ -1,5 +1,5 @@
-﻿using Application.Abstractions.Cashing.interfaces;
-using Application.Abstractions.Cashing.Models;
+﻿using Application.Abstractions.CasheStorage.DeviceOTP;
+using Application.Contracts.DeviceChecking.OtpChallenge;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Cashing
+namespace Infrastructure.Storage.DeviceOTP
 {
     public class OtpDeviceCacheStore : IOtpDeviceCacheStore
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Abstractions.Cashing.Models
+namespace Application.Contracts.DeviceChecking.OtpChallenge
 {
     public class OtpDeviceChallengeCache
     {

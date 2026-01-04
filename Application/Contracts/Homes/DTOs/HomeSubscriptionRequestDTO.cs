@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Common.DTOs
+namespace Application.Contracts.HomeService.DTOs
 {
     public class HomeSubscriptionRequestDTO
     {
