@@ -1,11 +1,11 @@
-﻿using Application.Entities.SqlEntities.UsersEntities;
+﻿using Domain.Entities.SqlEntities.UsersEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Entities.SqlEntities.SecurityEntities
+namespace Domain.Entities.SqlEntities.SecurityEntities
 {
     public class UserRefreshToken : BaseEntity<Guid>
     {

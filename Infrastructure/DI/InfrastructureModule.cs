@@ -2,15 +2,15 @@
 using Application.Abstractions.Identity;
 using Application.Abstractions.Image;
 using Application.Abstractions.Messaging.mail;
+using Application.Abstractions.Messaging.Mqtt;
 using Application.Abstractions.Security;
 using Application.Abstractions.Security.Interfaces;
 using Application.Abstractions.Time;
-using Application.Auth.Interfaces;
-using Application.Auth.Services;
-using Application.RepositotyInterfaces;
+using Domain.RepositotyInterfaces;
 using Infrastructure.Identity;
 using Infrastructure.Images;
 using Infrastructure.Messaging.mail;
+using Infrastructure.Messaging.Mqtt;
 using Infrastructure.Persistence;
 using Infrastructure.Security;
 using Infrastructure.Security.ConfigurationOptions;
@@ -20,6 +20,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using MQTTnet;
+using MQTTnet.Extensions.ManagedClient;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -42,30 +44,30 @@ namespace Infrastructure.DI
                 options.UseSqlServer(connectionString));
             #endregion
 
-
             #region 2) register Redis Connection Multiplexer
             // read connection string from appsettings.json
             var redisConn = configuration.GetConnectionString("Redis") ?? "localhost:6379";
             // create singleton multiplexer (thread-safe)
             services.AddSingleton<IConnectionMultiplexer>(
                 _ => ConnectionMultiplexer.Connect(redisConn));
-            // Redis Cache Store service
-            // 1- OtpDevice Checking Redis Store service
-            services.AddScoped<IOtpDeviceCacheStore, OtpDeviceCacheStore>();
             #endregion
 
-            #region 3) Options binding
+            #region 3) Authentication Options binding
             services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
             services.Configure<RefreshTokenOptions>(configuration.GetSection("Jwt"));
             #endregion
-
 
             #region 4) register repositories, unit of work, etc.
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             #endregion
 
+            #region 5) infrastructure Services
 
-            #region 5) any other infra services   
+            // Redis Cache Store service
+            // 1- OtpDevice Checking Redis Store service
+            services.AddScoped<IOtpDeviceCacheStore, OtpDeviceCacheStore>();
+
+            // infrastructure Service
             // 1- Identity configuration
             services.AddAppIdentityService();
             // 2- Identity Management
@@ -84,8 +86,21 @@ namespace Infrastructure.DI
             services.AddScoped<IEmailService, EmailService>();
             // 9- Image Service
             services.AddScoped<IImageService, ImageService>();
+            // 10- MqttBus Service
+            services.AddSingleton<IMqttBus, MqttBusService>();
+            // 11- MqttTopic Builder
+            services.AddScoped<IMqttTopicBuilder, MqttTopicBuilder>();
+
             #endregion
 
+            #region 6) MQTT Hosting Service
+            services.AddSingleton<IManagedMqttClient>(_ =>
+            {
+                var factory = new MqttFactory();
+                return factory.CreateManagedMqttClient();
+            });
+            services.AddHostedService<MqttHostedService>();
+            #endregion
             return services;
         }
     }

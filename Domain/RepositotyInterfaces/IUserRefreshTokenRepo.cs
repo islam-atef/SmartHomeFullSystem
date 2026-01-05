@@ -1,12 +1,12 @@
-﻿using Application.Entities.SqlEntities.SecurityEntities;
-using Application.GenericResult;
+﻿using Domain.Entities.SqlEntities.SecurityEntities;
+using Domain.GenericResult;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.RepositotyInterfaces
+namespace Domain.RepositotyInterfaces
 {
     public interface IUserRefreshTokenRepo
     {

@@ -1,5 +1,5 @@
-﻿using Application.Entities.SqlEntities.UsersEntities;
-using Application.GenericResult;
+﻿using Domain.Entities.SqlEntities.UsersEntities;
+using Domain.GenericResult;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.RepositotyInterfaces
+namespace Domain.RepositotyInterfaces
 {
     public interface IAppUserRepo
     {

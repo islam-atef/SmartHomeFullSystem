@@ -3,7 +3,6 @@ using Infrastructure.DI;
 using Infrastructure.Security.ConfigurationOptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -84,6 +83,8 @@ builder.Services.AddOpenApi();
 
 // Build the app
 var app = builder.Build();
+
+
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 // Enable routing

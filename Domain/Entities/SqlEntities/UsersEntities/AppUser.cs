@@ -1,5 +1,5 @@
-﻿using Application.Entities.SqlEntities.RoomEntities;
-using Application.Entities.SqlEntities.SecurityEntities;
+﻿using Domain.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.SecurityEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Application.Entities.SqlEntities.UsersEntities
+namespace Domain.Entities.SqlEntities.UsersEntities
 {
     public class AppUser : BaseEntity<Guid>
     {

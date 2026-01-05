@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Images
 {
-    internal class ImageService(IFileProvider fileProvider,ILogger<ImageService> logger) : IImageService
+    public class ImageService(IFileProvider fileProvider,ILogger<ImageService> logger) : IImageService
     {
         public void DeleteImage(string src)
         {

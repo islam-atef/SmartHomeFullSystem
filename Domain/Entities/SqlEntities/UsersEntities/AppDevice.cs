@@ -1,7 +1,7 @@
-﻿using Application.Entities.SqlEntities;
-using Application.Entities.SqlEntities.DiviceEntities;
-using Application.Entities.SqlEntities.SecurityEntities;
-using Application.Entities.SqlEntities.UsersEntities;
+﻿using Domain.Entities.SqlEntities;
+using Domain.Entities.SqlEntities.DiviceEntities;
+using Domain.Entities.SqlEntities.SecurityEntities;
+using Domain.Entities.SqlEntities.UsersEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

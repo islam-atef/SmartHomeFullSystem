@@ -1,5 +1,5 @@
-﻿using Application.Entities.SqlEntities.RoomEntities;
-using Application.Entities.SqlEntities.UsersEntities;
+﻿using Domain.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.UsersEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

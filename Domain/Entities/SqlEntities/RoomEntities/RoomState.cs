@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Entities.SqlEntities.RoomEntities
+namespace Domain.Entities.SqlEntities.RoomEntities
 {
     public class RoomState : BaseEntity<Guid>
     {

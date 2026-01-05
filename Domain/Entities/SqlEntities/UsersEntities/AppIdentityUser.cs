@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Entities.SqlEntities.UsersEntities
+namespace Domain.Entities.SqlEntities.UsersEntities
 {
     public class AppIdentityUser : IdentityUser<Guid>
     {
