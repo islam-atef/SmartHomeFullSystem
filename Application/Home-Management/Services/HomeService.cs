@@ -1,13 +1,8 @@
-﻿using Application.Abstractions.Identity;
-using Application.Abstractions.Image;
-using Application.Abstractions.Time;
-using Application.Contracts.HomeService.DTOs;
-using Application.Entities.SqlEntities.RoomEntities;
-using Application.GenericResult;
+﻿using Application.Contracts.HomeService.DTOs;
+using Domain.GenericResult;
 using Application.Home_Management.DTOs;
 using Application.Home_Management.Interfaces;
-using Application.RepositotyInterfaces;
-using Application.User_Dashboard.Services;
+using Domain.RepositotyInterfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;

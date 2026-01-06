@@ -1,4 +1,4 @@
-﻿using Application.GenericResult;
+﻿using Domain.GenericResult;
 using System;
 using System.Collections.Generic;
 using System.Linq;

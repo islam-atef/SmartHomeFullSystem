@@ -1,5 +1,4 @@
-﻿using Application.Common.DTOs;
-using Application.GenericResult;
+﻿using Domain.GenericResult;
 using Application.Home_Management.DTOs;
 using Application.User_Dashboard.DTOs;
 using Microsoft.AspNetCore.Http;

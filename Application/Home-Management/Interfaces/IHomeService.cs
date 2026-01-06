@@ -1,6 +1,5 @@
 ﻿using Application.Contracts.HomeService.DTOs;
-using Application.Entities.SqlEntities.RoomEntities;
-using Application.GenericResult;
+using Domain.GenericResult;
 using Application.Home_Management.DTOs;
 using System;
 using System.Collections.Generic;

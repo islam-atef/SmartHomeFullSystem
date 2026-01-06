@@ -1,7 +1,7 @@
-﻿using Application.GenericResult;
+﻿using Domain.GenericResult;
 using Application.Home_Management.DTOs;
 using Application.Home_Management.Interfaces;
-using Application.RepositotyInterfaces;
+using Domain.RepositotyInterfaces;
 using Application.User_Dashboard.Services;
 using Microsoft.Extensions.Logging;
 using System;

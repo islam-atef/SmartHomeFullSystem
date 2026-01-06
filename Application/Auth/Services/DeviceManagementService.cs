@@ -1,14 +1,13 @@
 ﻿using Application.Abstractions.CasheStorage.DeviceOTP;
-using Application.Abstractions.Messaging.DTOs;
+using Application.Contracts.Messaging.Mail.DTOs;
 using Application.Abstractions.Messaging.mail;
 using Application.Abstractions.Security;
 using Application.Auth.DTOs;
 using Application.Auth.Interfaces;
 using Application.Contracts.DeviceChecking.OtpChallenge;
 using Application.Contracts.Messaging.Mail.EmailBodies;
-using Application.Entities.SqlEntities.UsersEntities;
-using Application.GenericResult;
-using Application.RepositotyInterfaces;
+using Domain.GenericResult;
+using Domain.RepositotyInterfaces;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

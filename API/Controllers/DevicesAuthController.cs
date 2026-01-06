@@ -1,5 +1,6 @@
 ﻿using API.ApiDTOs.DeviceAuthControllerDTOs;
 using Application.Auth.Interfaces;
+using Domain.GenericResult;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,8 +25,8 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -43,8 +44,8 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }

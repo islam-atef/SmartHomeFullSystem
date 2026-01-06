@@ -1,4 +1,4 @@
-﻿using Application.GenericResult;
+﻿using Domain.GenericResult;
 using Application.Home_Management.DTOs;
 using System;
 using System.Collections.Generic;

@@ -1,5 +1,5 @@
 ﻿using API.ApiDTOs.HomeMangementDTOs.RequestDTOs;
-using Application.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.RoomEntities;
 using Application.Home_Management.DTOs;
 using Application.Home_Management.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -165,7 +165,7 @@ namespace API.Controllers
             if (!Guid.TryParse(userDTO.HomeId, out var guidHomeId))
                 return BadRequest("Invalid Home ID");
 
-            if (!Guid.TryParse(userDTO.NewUserId, out var newUserId))
+            if (!Guid.TryParse(userDTO.UserId, out var newUserId))
                 return BadRequest("Invalid User ID");
 
 
@@ -197,7 +197,7 @@ namespace API.Controllers
             if (!Guid.TryParse(userDTO.HomeId, out var guidHomeId))
                 return BadRequest("Invalid Home ID");
 
-            if (!Guid.TryParse(userDTO.NewUserId, out var existUserId))
+            if (!Guid.TryParse(userDTO.UserId, out var existUserId))
                 return BadRequest("Invalid User ID");
 
 
