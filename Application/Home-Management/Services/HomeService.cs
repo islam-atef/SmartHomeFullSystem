@@ -26,12 +26,12 @@ namespace Application.Home_Management.Services
             _logger = logger;
         }
 
-        public async Task<GenericResult<bool>> CreateNewHomeAsync(CreateHomeDTO homeDTO)
+        public async Task<GenericResult<Guid>> CreateNewHomeAsync(CreateHomeDTO homeDTO)
         {
             if (homeDTO == null)
             {
                 _logger.LogWarning("HomeService: CreateNewHomeAsync: No data provided!");
-                return GenericResult<bool>.Failure(ErrorType.MissingData, "");
+                return GenericResult<Guid>.Failure(ErrorType.MissingData, "");
             }
             try
             {
@@ -43,16 +43,16 @@ namespace Application.Home_Management.Services
                     homeDTO.Longitude,
                     homeDTO.OwnerId);
 
-                if(result)
-                    return GenericResult<bool>.Success(true);
+                if(result != Guid.Empty)
+                    return GenericResult<Guid>.Success(result);
 
                 _logger.LogError("HomeService: CreateNewHomeAsync: Error in the HomeRepo");
-                return GenericResult<bool>.Failure(ErrorType.DatabaseError, "");
+                return GenericResult<Guid>.Failure(ErrorType.DatabaseError, "");
             }
             catch (Exception ex)
             {
                 _logger.LogCritical("HomeService: CreateNewHomeAsync: {x}!", ex.Message);
-                return GenericResult<bool>.Failure(ErrorType.Conflict, ex.Message);
+                return GenericResult<Guid>.Failure(ErrorType.Conflict, ex.Message);
             }
         }
 

@@ -11,7 +11,7 @@ namespace Application.Home_Management.Interfaces
 {
     public interface IHomeService
     {
-        Task<GenericResult<bool>> CreateNewHomeAsync(CreateHomeDTO homeDTO);
+        Task<GenericResult<Guid>> CreateNewHomeAsync(CreateHomeDTO homeDTO);
 
         Task<GenericResult<bool>> UpdateHomeNameAsync(RenameHomeDTO homeDTO);
 

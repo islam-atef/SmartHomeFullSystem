@@ -38,7 +38,7 @@ namespace API.Controllers
 
             var result = await homeService.CreateNewHomeAsync(home);
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
             else
                 return BadRequest($"{result.ErrorType.ToString()} : {result.ErrorMessage}");
         }

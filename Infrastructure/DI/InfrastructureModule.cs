@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.CasheStorage.DeviceOTP;
+using Application.Abstractions.CasheStorage.Mqtt;
 using Application.Abstractions.Identity;
 using Application.Abstractions.Image;
 using Application.Abstractions.Messaging.mail;
@@ -11,10 +12,13 @@ using Infrastructure.Identity;
 using Infrastructure.Images;
 using Infrastructure.Messaging.mail;
 using Infrastructure.Messaging.Mqtt;
+using Infrastructure.Messaging.Mqtt.Parsing;
+using Infrastructure.Messaging.Mqtt.Serialization;
 using Infrastructure.Persistence;
 using Infrastructure.Security;
 using Infrastructure.Security.ConfigurationOptions;
 using Infrastructure.Storage.DeviceOTP;
+using Infrastructure.Storage.Mqtt;
 using Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -61,13 +65,15 @@ namespace Infrastructure.DI
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             #endregion
 
-            #region 5) infrastructure Services
-
-            // Redis Cache Store service
+            #region 5) Redis Cache Store service
             // 1- OtpDevice Checking Redis Store service
-            services.AddScoped<IOtpDeviceCacheStore, OtpDeviceCacheStore>();
+            services.AddSingleton<IOtpDeviceCacheStore, OtpDeviceCacheStore>();
+            // 2- Mqtt Unit state store service
+            services.AddSingleton<IUnitStateStore, UnitStateStore>();
 
-            // infrastructure Service
+            #endregion
+
+            #region 6) infrastructure Services
             // 1- Identity configuration
             services.AddAppIdentityService();
             // 2- Identity Management
@@ -86,21 +92,26 @@ namespace Infrastructure.DI
             services.AddScoped<IEmailService, EmailService>();
             // 9- Image Service
             services.AddScoped<IImageService, ImageService>();
-            // 10- MqttBus Service
-            services.AddSingleton<IMqttBus, MqttBusService>();
-            // 11- MqttTopic Builder
-            services.AddScoped<IMqttTopicBuilder, MqttTopicBuilder>();
 
             #endregion
 
-            #region 6) MQTT Hosting Service
-            services.AddSingleton<IManagedMqttClient>(_ =>
-            {
-                var factory = new MqttFactory();
-                return factory.CreateManagedMqttClient();
-            });
-            services.AddHostedService<MqttHostedService>();
+            #region 7) MQTT Hosting Service
+            //services.Configure<MqttOptions>(configuration.GetSection("Mqtt"));
+
+            //services.AddSingleton<IManagedMqttClient>(_ =>
+            //{
+            //    var factory = new MqttFactory();
+            //    return factory.CreateManagedMqttClient();
+            //});
+
+            //services.AddSingleton<IUnitMessageSerializer, UnitMessageSerializer>();
+            //services.AddSingleton<ITopicParser, TopicParser>();
+            //services.AddHostedService<MqttHostedService>();
+            //services.AddSingleton<DeviceStateListener>();
+            //services.AddSingleton<IMqttBus, MqttBusService>();
+            //services.AddScoped<IMqttTopicBuilder, MqttTopicBuilder>();
             #endregion
+
             return services;
         }
     }

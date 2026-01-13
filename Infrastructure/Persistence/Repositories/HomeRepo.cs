@@ -1,5 +1,5 @@
-﻿using Application.Entities.SqlEntities.RoomEntities;
-using Application.Entities.SqlEntities.UsersEntities;
+﻿using Domain.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.UsersEntities;
 using Domain.RepositotyInterfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -25,24 +25,24 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<bool> CreateHomeAsync(string name, string ip, double latitude, double longitude, Guid homeOwner)
+        public async Task<Guid> CreateHomeAsync(string name, string ip, double latitude, double longitude, Guid homeOwner)
         {
             if (String.IsNullOrEmpty(name) || String.IsNullOrEmpty(ip) || homeOwner == Guid.Empty || double.IsNaN(latitude) || double.IsNaN(longitude)) 
             {
                 logger.LogWarning("HomeRepo: CreateHomeAsync: no data provided!");
-                return false;
+                return Guid.Empty;
             }
             try
             {
                 var home = Home.Create(name, ip, latitude, longitude, homeOwner);
                 await context.Homes.AddAsync(home);
                 await SaveChangesAsync();
-                return true;
+                return home.Id;
             }
             catch (Exception ex)
             {
                 logger.LogCritical("HomeRepo: CreateHomeAsync: {error}",ex.Message);
-                return false;
+                return Guid.Empty;
             }
         }
 

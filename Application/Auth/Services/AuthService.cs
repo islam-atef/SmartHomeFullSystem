@@ -9,6 +9,7 @@ using Application.Auth.Interfaces;
 using Application.Contracts.Messaging.Mail.EmailBodies;
 using Domain.GenericResult;
 using Domain.RepositotyInterfaces;
+using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;

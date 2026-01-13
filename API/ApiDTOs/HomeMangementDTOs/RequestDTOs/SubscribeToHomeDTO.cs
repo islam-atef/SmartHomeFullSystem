@@ -2,6 +2,6 @@
 {
     public record SubscribeToHomeDTO
     {
-        public string homeId { get; init; }
+        public string homeId { get; init; } = default!;
     }
 }

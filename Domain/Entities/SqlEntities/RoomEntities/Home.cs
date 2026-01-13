@@ -1,5 +1,4 @@
-﻿using Domain.Entities.SqlEntities.DiviceEntities;
-using Domain.Entities.SqlEntities.UsersEntities;
+﻿using Domain.Entities.SqlEntities.UsersEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +12,7 @@ namespace Domain.Entities.SqlEntities.RoomEntities
     {
         public Home() { }
 
-        public string Name { get;private set; }
+        public string Name { get; private set; } = default!;
 
         private readonly List<Room> _homeRooms = new();
         public IReadOnlyCollection<Room> HomeRooms => _homeRooms.AsReadOnly();
@@ -23,10 +22,10 @@ namespace Domain.Entities.SqlEntities.RoomEntities
 
         public Guid HomeOwnerId {  get; set; } = default;
 
-        public double Latitude { get; private set; }   
-        public double Longitude { get; private set; }  
+        public double Latitude { get; private set; } = default!;   
+        public double Longitude { get; private set; } = default!;  
 
-        public string HomeIP { get; private set; }
+        public string HomeIP { get; private set; } = default!;
 
 
 

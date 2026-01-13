@@ -12,11 +12,11 @@ namespace Domain.Entities.SqlEntities.RoomEntities
         private RoomState() { }
 
         public Guid RoomProfileId { get; private set; }
-        public virtual RoomProfile RoomProfile { get; private set; }
+        public virtual RoomProfile RoomProfile { get; private set; } = default!;
 
         public DateTime? LastChange {get; private set; }
 
-        public string StateData { get; private set; }
+        public string StateData { get; private set; } = default!;
 
         public static RoomState Create(RoomProfile pr, string stateData)
         {

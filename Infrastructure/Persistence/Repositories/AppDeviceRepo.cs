@@ -1,5 +1,5 @@
-﻿using Application.Entities.SqlEntities.SecurityEntities;
-using Application.GenericResult;
+﻿using Domain.Entities.SqlEntities.SecurityEntities;
+using Domain.GenericResult;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Domain.RepositotyInterfaces;
 using Microsoft.EntityFrameworkCore;

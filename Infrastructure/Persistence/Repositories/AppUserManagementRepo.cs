@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Image;
-using Application.Entities.SqlEntities.RoomEntities;
-using Application.Entities.SqlEntities.UsersEntities;
-using Application.GenericResult;
+using Domain.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.UsersEntities;
+using Domain.GenericResult;
 using Domain.RepositotyInterfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

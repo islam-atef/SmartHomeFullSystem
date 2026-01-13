@@ -10,13 +10,13 @@ namespace Domain.Entities.SqlEntities.UsersEntities
 {
     public class Profile : BaseEntity<Guid>
     {
-        public string  ProfileName { get; set; }
+        public string ProfileName { get; set; } = default!;
 
         public Guid UserId { get; init; }
-        public AppUser User { get; init; }
+        public AppUser User { get; init; } = default!;
 
         public Guid HomeId { get; init; }
-        public Home Home { get; init; }
+        public Home Home { get; init; } = default!;
 
         public virtual ICollection<RoomProfile> RoomProfiles { get; set; } = new HashSet<RoomProfile>();
 

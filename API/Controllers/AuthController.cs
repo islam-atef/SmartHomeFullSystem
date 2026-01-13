@@ -1,7 +1,7 @@
 ﻿using API.ApiDTOs.AuthControllerDTOs.RequestDTOs;
 using Application.Auth.DTOs;
 using Application.Auth.Interfaces;
-using Application.GenericResult;
+using Domain.GenericResult;
 using Microsoft.AspNetCore.Mvc;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -34,9 +34,9 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => BadRequest(result.ErrorMessage)
                 };
             }
@@ -60,9 +60,9 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -86,8 +86,8 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.Conflict => Conflict(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.Conflict => Conflict(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -116,9 +116,9 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -138,8 +138,8 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -154,8 +154,8 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -176,9 +176,9 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.Unauthorized => Unauthorized(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }
@@ -221,8 +221,8 @@ namespace API.Controllers
             {
                 return result.ErrorType switch
                 {
-                    Application.GenericResult.ErrorType.InvalidData => BadRequest(result.ErrorMessage),
-                    Application.GenericResult.ErrorType.NotFound => NotFound(result.ErrorMessage),
+                    ErrorType.InvalidData => BadRequest(result.ErrorMessage),
+                    ErrorType.NotFound => NotFound(result.ErrorMessage),
                     _ => StatusCode(500, result.ErrorMessage)
                 };
             }

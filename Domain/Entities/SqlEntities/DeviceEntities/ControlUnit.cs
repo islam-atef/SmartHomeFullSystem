@@ -10,7 +10,9 @@ namespace Domain.Entities.SqlEntities.DiviceEntities
 {
     public class ControlUnit : BaseEntity<Guid>
     {
-        public string UnitMAC { get;private set; } // could be modified
+        public ControlUnit() { }
+
+        public string UnitMAC { get; private set; } = default!; // could be modified
 
         public string UnitFamilyType { get; set; } = string.Empty;
 
@@ -21,7 +23,7 @@ namespace Domain.Entities.SqlEntities.DiviceEntities
         public string UnitName { get; set;} = string.Empty;
 
         public Guid RoomId { get; private set; }
-        public virtual Room Room { get; private set; }
+        public virtual Room Room { get; private set; } = default!;
 
 
         public void Rename(string newName, string user)

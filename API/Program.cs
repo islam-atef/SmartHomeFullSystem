@@ -1,4 +1,5 @@
-﻿using Application.DI;
+﻿using API.Middlewares;
+using Application.DI;
 using Infrastructure.DI;
 using Infrastructure.Security.ConfigurationOptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -84,18 +85,28 @@ builder.Services.AddOpenApi();
 // Build the app
 var app = builder.Build();
 
-
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
+
 // Enable routing
 app.UseRouting();
+
 // Enable static files to serve content from wwwroot
 app.UseStaticFiles();
+
 // Enable CORS
 app.UseCors(MyAllowSpecificOrigins);
+
 // Enable authentication and authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Use a custom middleware to handle exceptions globally
+app.UseMiddleware<ExceptionsMiddleware>();
+
+// Use a custom error handling middleware to handle exceptions globally
+app.UseStatusCodePagesWithReExecute("/errors/{0}");
+
 // Swagger in Development
 if (app.Environment.IsDevelopment())
 {
@@ -103,7 +114,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 // Map controllers
 app.MapControllers();
+
 // launch the application
 app.Run();

@@ -1,6 +1,6 @@
 ﻿using Application.Abstractions.Identity;
 using Application.Abstractions.Identity.DTOs;
-using Application.Entities.SqlEntities.UsersEntities;
+using Domain.Entities.SqlEntities.UsersEntities;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

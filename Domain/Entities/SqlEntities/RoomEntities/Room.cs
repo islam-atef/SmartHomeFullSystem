@@ -25,10 +25,7 @@ namespace Domain.Entities.SqlEntities.RoomEntities
         public bool IsFunctional => RoomControlUnits.Count > 1;
 
         public Guid HomeId { get; set; }
-        public Home Home { get; set; }
-
-
-
+        public Home Home { get; set; } = default!;
 
 
 

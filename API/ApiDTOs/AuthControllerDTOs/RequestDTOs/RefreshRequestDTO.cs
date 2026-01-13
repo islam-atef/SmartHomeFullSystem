@@ -2,6 +2,6 @@
 {
     public record RefreshRequestDTO
     {
-        public string refreshTK {get; set; }
+        public string refreshTK { get; set; } = default!;
     }
 }

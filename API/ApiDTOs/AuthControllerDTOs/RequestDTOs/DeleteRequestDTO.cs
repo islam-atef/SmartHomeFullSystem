@@ -2,6 +2,6 @@
 {
     public record DeleteRequestDTO
     {
-        public string email {get; set; }
+        public string email { get; set; } = default!;
     }
 }

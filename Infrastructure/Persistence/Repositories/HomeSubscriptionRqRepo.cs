@@ -1,4 +1,4 @@
-﻿using Application.Entities.SqlEntities.RoomEntities;
+﻿using Domain.Entities.SqlEntities.RoomEntities;
 using Domain.Entities.SqlEntities.CommonEntities;
 using Domain.RepositotyInterfaces;
 using Microsoft.EntityFrameworkCore;

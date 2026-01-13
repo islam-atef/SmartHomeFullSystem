@@ -1,6 +1,5 @@
 ﻿using Application.Abstractions.Image;
-using Application.Entities.SqlEntities.UsersEntities;
-using Application.RepositotyInterfaces;
+using Domain.Entities.SqlEntities.UsersEntities;
 using Domain.RepositotyInterfaces;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Identity;

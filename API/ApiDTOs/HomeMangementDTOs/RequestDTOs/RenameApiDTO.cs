@@ -3,6 +3,6 @@
     public record RenameApiDTO
     {
         public string NewName { get; set; } = string.Empty;
-        public string HomeId { get; set; }
+        public string HomeId { get; set; } = default!;
     }
 }

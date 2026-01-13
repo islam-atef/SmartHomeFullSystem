@@ -11,25 +11,27 @@ namespace Infrastructure.Messaging.Mqtt
     {
         private const string Root = "smarthome";
 
+        // publish
         public string ControlUnitCommand(Guid homeId, Guid roomId, Guid controlUnitId)
-        {
-            return $"{Root}/{homeId}/rooms/{roomId}/units/{controlUnitId}/cmd";
-        }
+            => $"{Root}/{homeId}/rooms/{roomId}/units/{controlUnitId}/cmd";
 
+
+        // subscribe filters
         public string ControlUnitState(Guid homeId, Guid roomId, Guid controlUnitId)
-        {
-            return $"{Root}/{homeId}/rooms/{roomId}/units/{controlUnitId}/state";
-        }
+            => $"{Root}/{homeId}/rooms/{roomId}/units/{controlUnitId}/state";
+
+        public string ControlUnitState()
+            => $"{Root}/+/rooms/+/units/+/state";
+
 
         public string ControlUnitTelemetry(Guid homeId, Guid roomId, Guid controlUnitId)
-        {
-            return $"{Root}/{homeId}/rooms/{roomId}/units/{controlUnitId}/telemetry";
-        }
+            => $"{Root}/{homeId}/rooms/{roomId}/units/{controlUnitId}/telemetry";
+
+        public string ControlUnitTelemetry()
+            => $"{Root}/+/rooms/+/units/+/telemetry";
+
 
         public string RoomWildcard(Guid homeId, Guid roomId)
-        {
-            // subscribe with all units in the room
-            return $"{Root}/{homeId}/rooms/{roomId}/units/+/+";
-        }
+            => $"{Root}/{homeId}/rooms/{roomId}/units/+/+";// subscribe with all units in the room
     }
 }

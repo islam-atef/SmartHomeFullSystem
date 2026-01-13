@@ -1,9 +1,8 @@
-﻿using Application.Entities.SqlEntities.DiviceEntities;
-using Application.Entities.SqlEntities.RoomEntities;
-using Application.Entities.SqlEntities.SecurityEntities;
-using Application.Entities.SqlEntities.UsersEntities;
-using Domain.Entities.SqlEntities.CommonEntities;
+﻿using Domain.Entities.SqlEntities.DiviceEntities;
+using Domain.Entities.SqlEntities.RoomEntities;
+using Domain.Entities.SqlEntities.SecurityEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
+using Domain.Entities.SqlEntities.CommonEntities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

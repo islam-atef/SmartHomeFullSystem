@@ -1,5 +1,4 @@
-﻿using Application.Entities.SqlEntities.DiviceEntities;
-using Application.Entities.SqlEntities.UsersEntities;
+﻿using Domain.Entities.SqlEntities.DiviceEntities;
 using Domain.Entities.SqlEntities.UsersEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

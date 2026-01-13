@@ -10,20 +10,22 @@ namespace Domain.Entities.SqlEntities.RoomEntities
 {
     public class RoomProfile : BaseEntity<Guid>
     {
-        public Guid ProfileId { get; private set; }
-        public virtual Profile Profile { get; private set; }
+        private RoomProfile() { }
 
-        public string Name { get; set; }
+        public Guid ProfileId { get; private set; }
+        public virtual Profile Profile { get; private set; } = default!;
+
+        public string Name { get; set; } = default!;
 
         public Guid RoomId { get; private set; }
-        public virtual Room Room { get; private set; }
+        public virtual Room Room { get; private set; } = default!;
 
         private readonly List<RoomState> _favoriteStates = new();
         public IReadOnlyCollection<RoomState> FavoriteStates => _favoriteStates.AsReadOnly();
 
         public virtual RoomState? LastState { get; private set; }
 
-        private RoomProfile() { }
+        
 
         public static RoomProfile Link(Profile profile, Room room)
         {
