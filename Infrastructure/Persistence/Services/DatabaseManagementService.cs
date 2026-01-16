@@ -1,10 +1,11 @@
 ﻿using Application.Abstractions.System;
 using Microsoft.EntityFrameworkCore;
+using Application.Contracts.System;
 using Microsoft.Data.SqlClient;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Application.Contracts.System;
+
 
 namespace Infrastructure.Persistence.Services
 {
