@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="9.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,7 +30,6 @@
   <ItemGroup>
     <Folder Include="ApiDTOs\AuthControllerDTOs\ResponseDTOs\" />
     <Folder Include="ApiDTOs\UserInfoControllerDTOs\ResponseDTOs\" />
-    <Folder Include="Hubs\" />
     <Folder Include="wwwroot\General\" />
   </ItemGroup>
 

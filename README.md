@@ -103,9 +103,14 @@ The project follows **Clean Architecture** principles with clear separation of c
 - ✅ Image upload and management
 - ✅ Email service integration (MailKit)
 - ✅ Redis caching for performance
+- ✅ **SignalR for real-time updates**
+- ✅ **Rate Limiting** via middleware
+- ✅ **Global Exception Handling**
 - ✅ Swagger/OpenAPI documentation
 - ✅ CORS configuration for frontend integration
 - ✅ Docker support for containerization
+- ✅ **Database Backup & Restore** (Manual & Automated)
+- ✅ **Auto-Discovery** for SQL Connection Strings (Portability)
 
 ## 🛠️ Technology Stack
 
@@ -167,6 +172,8 @@ cd SmartHomeFullSystem
   "DefaultConnection": "Data Source=YOUR_SERVER_NAME\\SQLEXPRESS;Initial Catalog=SmartHome_DB;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;"
 }
 ```
+
+> **✨ Tip:** The application now supports **Auto-Discovery**! If you leave the connection string as is, it will automatically try to connect to `.\SQLEXPRESS`, `(localdb)\MSSQLLocalDB`, or `.` (Default Instance) if the configured server is not found. This makes the project portable across different machines!
 
 #### Option B: Using Docker
 
@@ -364,6 +371,7 @@ policy.WithOrigins("https://localhost:4200") // Your Angular app URL
 Authorization: Bearer <your-access-token>
 ```
 
+
 ## 📁 Project Structure
 
 ```
@@ -371,6 +379,9 @@ SmartHomeFullSystem/
 ├── API/                          # Presentation Layer
 │   ├── Controllers/              # API Controllers
 │   ├── ApiDTOs/                  # Request/Response DTOs
+│   ├── Hubs/                     # SignalR Hubs (Real-time)
+│   ├── Middlewares/              # Custom Middleware (Exceptions, Rate Limiting)
+│   ├── Realtime/                 # Real-time Publishers
 │   ├── Program.cs                # Application entry point
 │   └── appsettings.json          # Configuration
 │
@@ -396,175 +407,15 @@ SmartHomeFullSystem/
     └── DI/                       # Infrastructure DI
 ```
 
-## 📊 Project Rating & Analysis
+## 📈 Project Status & Roadmap
 
-### Overall Rating: **8.5/10** ⭐⭐⭐⭐
+Detailed project analysis, rating, and future roadmap can be found in [PROJECT_STATUS.md](./PROJECT_STATUS.md).
 
-### Strengths ✅
-
-1. **Architecture (9/10)**
-   - Excellent clean architecture implementation
-   - Clear separation of concerns
-   - Proper dependency direction (Domain → Application → Infrastructure → API)
-   - Well-organized layer structure
-
-2. **Code Quality (8/10)**
-   - Modern .NET 9.0 features
-   - Nullable reference types enabled
-   - Generic Result pattern for error handling
-   - Domain-driven design principles
-
-3. **Security (8/10)**
-   - JWT authentication with refresh tokens
-   - Device-based authentication
-   - Password hashing
-   - OTP challenge system
-   - ⚠️ **Issue**: JWT secret key in appsettings.json (should use User Secrets/Environment Variables)
-
-4. **Features (8/10)**
-   - Comprehensive authentication system
-   - Multi-home management
-   - MQTT integration for IoT
-   - Email services
-   - Redis caching
-
-5. **Documentation (6/10)**
-   - Basic README (now improved)
-   - Swagger/OpenAPI available
-   - ⚠️ Missing inline code documentation
-   - ⚠️ No architecture diagrams
-
-### Areas for Improvement ⚠️
-
-1. **Security Concerns**
-   - Secrets in configuration files
-   - No rate limiting
-   - Missing input validation attributes
-   - No API versioning
-
-2. **Testing**
-   - No unit tests
-   - No integration tests
-   - No test coverage
-
-3. **Error Handling**
-   - Inconsistent error responses
-   - Missing global exception handler
-   - No structured logging
-
-4. **Performance**
-   - No response caching
-   - Missing pagination for list endpoints
-   - No database query optimization visible
-
-5. **Code Issues**
-   - MQTT service not fully implemented (throws NotImplementedException)
-   - Some typos in naming (e.g., "FronEndInfo" → "FrontEndInfo")
-   - Missing SignalR hubs (referenced in Program.cs but not implemented)
-
-## 🔧 Recommended Upgrades
-
-### High Priority 🔴
-
-#### 1. Security Enhancements
-- [ ] Move secrets to User Secrets/Environment Variables
-- [ ] Implement rate limiting (e.g., AspNetCoreRateLimit)
-- [ ] Add input validation with FluentValidation
-- [ ] Implement API versioning
-- [ ] Add HTTPS enforcement
-- [ ] Implement CORS policy restrictions
-- [ ] Add request size limits
-
-#### 2. Testing Infrastructure
-- [ ] Add xUnit test project
-- [ ] Write unit tests for services (target 80%+ coverage)
-- [ ] Add integration tests for API endpoints
-- [ ] Implement test database seeding
-- [ ] Add API contract testing
-
-#### 3. Error Handling & Logging
-- [ ] Implement global exception handler middleware
-- [ ] Add structured logging (Serilog)
-- [ ] Create custom exception types
-- [ ] Standardize error response format
-- [ ] Add request/response logging middleware
-
-#### 4. Complete MQTT Implementation
-- [ ] Implement `MqttBusService` methods
-- [ ] Add MQTT configuration to appsettings
-- [ ] Implement device state synchronization
-- [ ] Add MQTT connection health checks
-- [ ] Create MQTT message handlers
-
-### Medium Priority 🟡
-
-#### 5. Performance Optimizations
-- [ ] Add response caching for read operations
-- [ ] Implement pagination for list endpoints
-- [ ] Add database query optimization (AsNoTracking, projections)
-- [ ] Implement lazy loading or explicit loading strategies
-- [ ] Add Redis caching for frequently accessed data
-
-#### 6. API Improvements
-- [ ] Implement SignalR hubs for real-time updates
-- [ ] Add API versioning (v1, v2)
-- [ ] Create API response wrappers
-- [ ] Add request/response compression
-- [ ] Implement health check endpoints
-
-#### 7. Code Quality
-- [ ] Fix naming inconsistencies (FronEndInfo → FrontEndInfo)
-- [ ] Add XML documentation comments
-- [ ] Implement code analyzers (StyleCop, SonarAnalyzer)
-- [ ] Add .editorconfig file
-- [ ] Fix nullable reference warnings
-
-#### 8. Database Enhancements
-- [ ] Add database indexes for performance
-- [ ] Implement soft delete properly
-- [ ] Add database migrations for indexes
-- [ ] Consider read replicas for scaling
-- [ ] Add database backup strategy
-
-### Low Priority 🟢
-
-#### 9. Documentation
-- [ ] Add inline XML documentation
-- [ ] Create architecture decision records (ADRs)
-- [ ] Add sequence diagrams for complex flows
-- [ ] Document deployment procedures
-- [ ] Create developer onboarding guide
-
-#### 10. DevOps & CI/CD
-- [ ] Add GitHub Actions / Azure DevOps pipeline
-- [ ] Implement automated testing in CI
-- [ ] Add Docker Compose for local development
-- [ ] Create production deployment scripts
-- [ ] Add application monitoring (Application Insights)
-
-#### 11. Advanced Features
-- [ ] Implement WebSocket support for real-time updates
-- [ ] Add device scheduling/automation
-- [ ] Implement device groups/scenes
-- [ ] Add notification system (push notifications)
-- [ ] Create admin dashboard API
-- [ ] Add audit logging
-- [ ] Implement file upload size limits and validation
-
-#### 12. Code Refactoring
-- [ ] Extract common controller logic to base class
-- [ ] Implement CQRS pattern for complex operations
-- [ ] Add MediatR for request handling
-- [ ] Implement repository pattern improvements
-- [ ] Add specification pattern for queries
-
-### Implementation Priority Order
-
-1. **Week 1-2**: Security fixes, error handling, logging
-2. **Week 3-4**: Testing infrastructure, unit tests
-3. **Week 5-6**: Complete MQTT implementation, SignalR
-4. **Week 7-8**: Performance optimizations, API improvements
-5. **Ongoing**: Documentation, CI/CD, advanced features
+Current Focus:
+- ✅ **Core Features**: Authentication, Home/Room/Device Management working.
+- ✅ **Real-time**: SignalR integrated for device updates.
+- ✅ **Stability**: Rate limiting and global exception handling implemented.
+- 🟡 **Pending**: Completing MQTT service activation and adding comprehensive testing.
 
 ## 🤝 Contributing
 
@@ -591,6 +442,7 @@ This is a private project. For contributions, please follow:
 
 ---
 
-**Last Updated**: January 2025
-**Version**: 1.0.0
+**Last Updated**: January 2026
+**Version**: 1.1.0
 **Status**: Active Development
+

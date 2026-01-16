@@ -215,9 +215,18 @@ namespace Application.User_Dashboard.Services
                 {
                     var homeDTO = new UserHomesDTO();
                     homeDTO.HomeId = home.Id;
-                    homeDTO.HomeName = home.Name;
+                    homeDTO.IsOwner = home.HomeOwnerId == userId;
+
+                    homeDTO.HomeName = $"{home!.Name} {home.HomeReference}";
+                    homeDTO.HomeInfo = home.HomeInfo;
+
                     homeDTO.Longitude = home.Longitude;
                     homeDTO.Latitude = home.Latitude;
+
+                    homeDTO.Country = home.Country;
+                    homeDTO.State = home.State;
+                    homeDTO.Address = home.Address;
+
                     homesDTOs.Add(homeDTO);
                 }
                 return GenericResult<IReadOnlyList<UserHomesDTO>>.Success(homesDTOs);

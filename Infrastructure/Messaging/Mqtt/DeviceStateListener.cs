@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.CasheStorage.Mqtt;
 using Application.Abstractions.Messaging.Mqtt;
+using Application.Abstractions.Realtime;
 using Application.Contracts.Messaging.Mqtt;
 using Infrastructure.Messaging.Mqtt.Parsing;
 using Infrastructure.Messaging.Mqtt.Serialization;
@@ -19,13 +20,13 @@ namespace Infrastructure.Messaging.Mqtt
         private readonly IUnitStateStore _store;
         private readonly IUnitMessageSerializer _serializer;
         private readonly ITopicParser _parser;
-        //private readonly IDevicesRealtimePublisher _realtime;
+        private readonly IDevicesRealtimePublisher _realtime;
 
         public DeviceStateListener(
             IMqttBus bus,
             IUnitStateStore store,
             IUnitMessageSerializer serializer,
-            //IDevicesRealtimePublisher realtime,
+            IDevicesRealtimePublisher realtime,
             ITopicParser parser,
             ILogger<DeviceStateListener> logger)
         {
@@ -33,8 +34,8 @@ namespace Infrastructure.Messaging.Mqtt
             _logger = logger;
             _serializer = serializer;
             _parser = parser;
-            //_realtime = realtime;
-            
+            _realtime = realtime;
+
             // invoke in MQTT MessageReceiver event
             bus.MessageReceived += HandleAsync;
         }
@@ -63,7 +64,7 @@ namespace Infrastructure.Messaging.Mqtt
              *  مثال سريع: parse from topic (انت الأفضل تعمل Parser)
              */
             var ids = _parser.Parse(topic); // homeId, roomId, unitId
-            //await _realtime.PublishUnitStateAsync(ids.HomeId, ids.RoomId, ids.UnitId, state);
+            await _realtime.UnitStateUpdatedAsync(ids.HomeId, ids.RoomId, ids.UnitId, state);
         }
     }
 }

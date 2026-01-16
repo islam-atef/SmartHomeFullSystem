@@ -10,7 +10,16 @@ namespace Domain.RepositotyInterfaces
 {
     public interface IHomeRepo
     {
-        Task<Guid> CreateHomeAsync(string name, string ip, double latitude, double longitude, Guid homeOwner);
+        Task<Guid> CreateHomeAsync(
+            string name,
+            string? info,
+            double latitude,
+            double longitude,
+            string iSO3166_2_lvl4,
+            string country,
+            string state,
+            string address,
+            Guid homeOwner);
 
         Task<Home?> GetHomeAsync(Guid homeId);
         Task<string> GetHomeNameAsync(Guid homeId);

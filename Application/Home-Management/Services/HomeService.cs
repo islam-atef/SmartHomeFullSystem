@@ -38,9 +38,13 @@ namespace Application.Home_Management.Services
                 // 1- create home entity
                 var result = await _work.Home.CreateHomeAsync(
                     homeDTO.Name,
-                    homeDTO.HomeIP ?? "0.0.0.0",
+                    homeDTO.HomeInfo,
                     homeDTO.Latitude,
                     homeDTO.Longitude,
+                    homeDTO.ISO3166_2_lvl4,
+                    homeDTO.Country,
+                    homeDTO.State,
+                    homeDTO.Address,
                     homeDTO.OwnerId);
 
                 if(result != Guid.Empty)
@@ -122,10 +126,14 @@ namespace Application.Home_Management.Services
                 var homeData = new HomeDataDTO 
                 {
                     HomeId = homeId,
-                    HomeName = home.Name,
+                    HomeName = $"{home!.Name} {home.HomeReference}",
+                    HomeInfo = home.HomeInfo,
                     OwnerName = ownerName.Value.userName,
                     Latitude = home.Latitude,
                     Longitude = home.Longitude,
+                    Country = home.Country,
+                    State = home.State,
+                    Address = home.Address,
                     HomeRooms = homeRooms,
                     HomeUsers = userNames,
                 };
@@ -355,6 +363,9 @@ namespace Application.Home_Management.Services
             }
         }
 
-
+        public Task<GenericResult<IReadOnlyList<HomeCardDTO>>> SearchForHomeAsync(string name)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

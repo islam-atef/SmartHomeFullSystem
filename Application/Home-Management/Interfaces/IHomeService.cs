@@ -24,5 +24,7 @@ namespace Application.Home_Management.Interfaces
         Task<GenericResult<HomeDataDTO>> GetHomeDataAsync(Guid homeId);
         Task<GenericResult<IReadOnlyList<HomeSubscriptionRequestDTO>>> GerHomeAllSubscriptionRequestAsync(Guid homeId, Guid ownerId);
         Task<GenericResult<IReadOnlyList<HomeSubscriptionRequestDTO>>> GerHomeNewSubscriptionRequestAsync(Guid homeId, Guid ownerId);
+
+        Task<GenericResult<IReadOnlyList<HomeCardDTO>>> SearchForHomeAsync(string name);
     }
 }

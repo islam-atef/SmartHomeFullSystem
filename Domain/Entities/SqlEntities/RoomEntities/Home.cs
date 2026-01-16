@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.SqlEntities.UsersEntities;
+using Domain.RuleServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Domain.Entities.SqlEntities.RoomEntities
         public Home() { }
 
         public string Name { get; private set; } = default!;
+        public string HomeReference { get; private set; } = default!;
 
         private readonly List<Room> _homeRooms = new();
         public IReadOnlyCollection<Room> HomeRooms => _homeRooms.AsReadOnly();
@@ -25,11 +27,12 @@ namespace Domain.Entities.SqlEntities.RoomEntities
         public double Latitude { get; private set; } = default!;   
         public double Longitude { get; private set; } = default!;  
 
-        public string HomeIP { get; private set; } = default!;
+        public string? HomeInfo { get; private set; } = default!;
 
-
-
-
+        public string ISO3166_2_lvl4 { get; private set; } = default!;
+        public string Country { get; private set; } = default!;
+        public string State { get; private set; } = default!;
+        public string Address { get; private set; } = default!;
 
         public void Rename(string newName , string userName)
         {
@@ -39,14 +42,31 @@ namespace Domain.Entities.SqlEntities.RoomEntities
             UpdateAudit(userName);
         }
 
-        public static Home Create(string name , string ip, double latitude, double longitude, Guid homeOwner)
+        public static Home Create(
+            string name , 
+            string? info, 
+            double latitude, 
+            double longitude,
+            string iSO3166_2_lvl4,
+            string country,
+            string state,
+            string address,
+            Guid homeOwner)
         {
+            var id = Guid.NewGuid();
+
             var H = new Home
             {
-                Id = Guid.NewGuid(),
+                Id = id,
                 Name = NormalizeName(name),
+                ISO3166_2_lvl4 = iSO3166_2_lvl4,
+                Country = country,
+                State = state,
+                Address = address,
+                HomeReference = ReferenceHashMaker.HomeReferenceMaker(id, iSO3166_2_lvl4),
             };
-            H.SetHomeIP(ip);
+
+            H.SetHomeInfo(info ?? null);
             H.SetHomeLocation(latitude, longitude);
             H.SetHomeOwner(homeOwner);
             return H;
@@ -82,15 +102,9 @@ namespace Domain.Entities.SqlEntities.RoomEntities
             ModifiedAt = DateTime.UtcNow;
         }
 
-        public void SetHomeIP(string ip)
+        public void SetHomeInfo(string? info)
         {
-            if (string.IsNullOrWhiteSpace(ip)) throw new ArgumentException("IP is required.", nameof(ip));
-            var v = ip.Trim();
-
-            if (!System.Net.IPAddress.TryParse(v, out var parsedIp))
-                throw new ArgumentException("Invalid IP address format.", nameof(ip));
-
-            HomeIP = parsedIp.ToString();
+            HomeInfo = info;
             ModifiedAt = DateTime.UtcNow;
         }
 

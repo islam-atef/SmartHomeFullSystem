@@ -25,23 +25,39 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<Guid> CreateHomeAsync(string name, string ip, double latitude, double longitude, Guid homeOwner)
+        public async Task<Guid> CreateHomeAsync(
+            string name,
+            string? info, 
+            double latitude, 
+            double longitude, 
+            string iSO3166_2_lvl4, 
+            string country, 
+            string state, 
+            string address, 
+            Guid homeOwner)
         {
-            if (String.IsNullOrEmpty(name) || String.IsNullOrEmpty(ip) || homeOwner == Guid.Empty || double.IsNaN(latitude) || double.IsNaN(longitude)) 
+            if (String.IsNullOrEmpty(name) || 
+                String.IsNullOrEmpty(iSO3166_2_lvl4) ||
+                String.IsNullOrEmpty(country) ||
+                String.IsNullOrEmpty(state) ||
+                String.IsNullOrEmpty(address) ||
+                homeOwner == Guid.Empty || 
+                double.IsNaN(latitude) || 
+                double.IsNaN(longitude))
             {
                 logger.LogWarning("HomeRepo: CreateHomeAsync: no data provided!");
                 return Guid.Empty;
             }
             try
             {
-                var home = Home.Create(name, ip, latitude, longitude, homeOwner);
+                var home = Home.Create(name, info, latitude, longitude,iSO3166_2_lvl4,country,state,address, homeOwner);
                 await context.Homes.AddAsync(home);
                 await SaveChangesAsync();
                 return home.Id;
             }
             catch (Exception ex)
             {
-                logger.LogCritical("HomeRepo: CreateHomeAsync: {error}",ex.Message);
+                logger.LogCritical("HomeRepo: CreateHomeAsync: {error}", ex.Message);
                 return Guid.Empty;
             }
         }
@@ -71,22 +87,22 @@ namespace Infrastructure.Persistence.Repositories
                 return false;
             }
         }
-        public async Task<bool> SetHomeIPAsync(Guid homeId, string ip)
+        public async Task<bool> SetHomeInfoAsync(Guid homeId, string homeInfo)
         {
-            if (String.IsNullOrEmpty(ip) || homeId == Guid.Empty)
+            if (String.IsNullOrEmpty(homeInfo) || homeId == Guid.Empty)
             {
-                logger.LogWarning("HomeRepo: SetHomeIPAsync: data Missing!, homeId: {x}, new IP: {y}",homeId,ip);
+                logger.LogWarning("HomeRepo: SetHomeIPAsync: data Missing!, homeId: {x}, new homeInfo: {y}", homeId, homeInfo);
                 return false;
             }
             try
             {
-                var home = await context.Homes.FindAsync(homeId);
+                var home = await context.Homes.FindAsync(homeInfo);
                 if (home == null)
                 {
                     logger.LogError("HomeRepo: SetHomeIPAsync: no Home with this Id is Found, id: {id}!", homeId);
                     return false;
                 }
-                home.SetHomeIP(ip);
+                home.SetHomeInfo(homeInfo);
                 await SaveChangesAsync();
                 return true;
             }
@@ -314,13 +330,14 @@ namespace Infrastructure.Persistence.Repositories
             }
             try
             {
-                var homeName = await context.Homes
+                var home = await context.Homes
                     .Where(H => H.Id == homeId)
                     .AsNoTracking()
-                    .Select(h => h.Name)     
+                    .Select(h => new{ h.Name, h.HomeReference })     
                     .FirstOrDefaultAsync();
- 
-                    return homeName!;
+
+                var name = $"{home!.Name} {home.HomeReference}";
+                    return name;
             }
             catch (Exception ex)
             {

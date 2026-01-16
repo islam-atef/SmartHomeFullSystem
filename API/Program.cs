@@ -1,4 +1,7 @@
-﻿using API.Middlewares;
+﻿using API.Hubs;
+using API.Middlewares;
+using API.Realtime;
+using Application.Abstractions.Realtime;
 using Application.DI;
 using Infrastructure.DI;
 using Infrastructure.Security.ConfigurationOptions;
@@ -15,6 +18,8 @@ builder.Services.AddApplicationService();
 // Infra setup (DB, Repos, etc.)
 builder.Services.AddInfrastructureService(builder.Configuration);
 
+// Realtime Service
+builder.Services.AddSingleton<IDevicesRealtimePublisher, DevicesRealtimePublisher>();
 
 // JWT Authentication setup
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -81,6 +86,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
 
 // Build the app
 var app = builder.Build();
@@ -106,6 +112,9 @@ app.UseMiddleware<ExceptionsMiddleware>();
 
 // Use a custom error handling middleware to handle exceptions globally
 app.UseStatusCodePagesWithReExecute("/errors/{0}");
+
+// SignalR
+app.MapHub<RoomDevicesHub>("/hubs/roomDevices");
 
 // Swagger in Development
 if (app.Environment.IsDevelopment())

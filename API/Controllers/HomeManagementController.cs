@@ -23,17 +23,20 @@ namespace API.Controllers
             if (!Guid.TryParse(userIdClaim.Value, out var userId))
                 return Unauthorized("Invalid UserId claim");
 
-            var deviceIP = Request.Headers.ContainsKey("X-Forwarded-For")
-                ? Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim()
-                : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-
             var home = new CreateHomeDTO
             {
                 OwnerId = userId,
-                HomeIP = deviceIP,
+
                 Name = homeDTO.Name,
+                HomeInfo = homeDTO.HomeInfo,
+                
                 Latitude = homeDTO.Latitude,
                 Longitude = homeDTO.Longitude,
+
+                ISO3166_2_lvl4 = homeDTO.ISO3166_2_lvl4,
+                Country = homeDTO.Country,
+                State = homeDTO.State,
+                Address = homeDTO.Address,
             };
 
             var result = await homeService.CreateNewHomeAsync(home);
